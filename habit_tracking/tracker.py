@@ -239,12 +239,12 @@ class HabitTracker(HabitPlotter):
         self.df['Year'] = pd.to_datetime(self.df['Date']).dt.strftime('%Y')
         
         # Calculate raw counts
-        monthly_stats_raw = self.df.groupby(['Year', 'Month'])[config.BOOLEAN_VARIABLES].sum()
+        monthly_stats_raw = self.df.groupby(['Year', 'Month'])[self.boolean_variables].sum()
         
         # Calculate percentages
         monthly_stats_percent = (
-            self.df.groupby(['Year', 'Month'])[config.BOOLEAN_VARIABLES].sum() / 
-            self.df.groupby(['Year', 'Month'])[config.BOOLEAN_VARIABLES].count() * 100
+            self.df.groupby(['Year', 'Month'])[self.boolean_variables].sum() / 
+            self.df.groupby(['Year', 'Month'])[self.boolean_variables].count() * 100
         )
         
         # Convert 'Mental_Health' to numeric (if not already)
