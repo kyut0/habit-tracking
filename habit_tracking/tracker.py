@@ -53,6 +53,7 @@ class HabitTracker(HabitPlotter):
         self.process_boolean_variables()
         self.process_categorical_variables()
         self.calculate_tracked_habits()
+        self.combine_d8_weed() # if config.COMBINE_D8_WEED is True, this will combine the two variables into one
         # period_dates = self.process_periods() # DO SOMETHING WITH THIS--RETURN OR ADD TO SELF __INIT__
         
         # Load additional data if provided
@@ -104,6 +105,10 @@ class HabitTracker(HabitPlotter):
             self.df[col] = self.df[col].map({'Yes': True, 'No': False})
             self.df[col] = self.df[col].astype('boolean')
             
+            # Fill missing values with config.NA_AS_TRUE if specified
+            if col in config.NA_AS_TRUE:
+                self.df[col] = self.df[col].fillna(config.NA_AS_TRUE[col])
+            
     def process_categorical_variables(self):
         """Convert categorical variables to proper types"""
         
@@ -129,6 +134,18 @@ class HabitTracker(HabitPlotter):
         )
         
         self.df['Collected_Data'] = ~self.df['Submission_DateTime'].isna()
+        
+    def combine_d8_weed(self):
+        """Combine Delta8 and Weed into a single variable if config.COMBINE_D8_WEED is True"""
+        if not config.COMBINE_D8_WEED:
+            return
+        
+        self.df['Weed'] = self.df.apply(
+            lambda row: row['Weed'] or row['Delta8'], 
+            axis=1
+        )
+        
+        self.df.drop(columns=['Delta8'], inplace=True)
         
     def process_sleep_data(self):
         """Process sleep data if available"""
