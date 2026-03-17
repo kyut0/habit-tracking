@@ -18,12 +18,17 @@ warnings.filterwarnings('ignore')
 sns.set_palette("deep")
 
 class HabitPlotter:
+    @property
+    def boolean_variables(self):
+        """Returns BOOLEAN_VARIABLES filtered to columns present in self.df (e.g. after combining Delta8/Weed)"""
+        return [var for var in config.BOOLEAN_VARIABLES if var in self.df.columns]
+
     def plot_cumulative_habits(self):
         """Plot cumulative habits over time"""
         plt.figure(figsize=(15, 8))
         
         # Plot each variable
-        for var in config.BOOLEAN_VARIABLES:
+        for var in self.boolean_variables:
             cumsum = self.df[var].fillna(False).cumsum()
             plt.plot(self.df['Date'], cumsum, 
                     label=var, color=config.VAR_COLORS.get(var, 'gray'))
@@ -75,7 +80,7 @@ class HabitPlotter:
         # Prepare data for heatmap
         heatmap_data = monthly_stats_percent.melt(
             id_vars=['Year_Month'],
-            value_vars=config.BOOLEAN_VARIABLES + ['Mental_Health'],
+            value_vars=self.boolean_variables + ['Mental_Health'],
             var_name='Variable',
             value_name='Percentage'
         )
