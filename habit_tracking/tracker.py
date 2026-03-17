@@ -136,7 +136,38 @@ class HabitTracker(HabitPlotter):
         sleep_clean['Time_Asleep_hr'] = sleep_clean['Time_Asleep_sec'] / 3600
         sleep_clean['Time_Before_Sleep_hr'] = sleep_clean['Time_Before_Sleep_sec'] / 3600
         
-        self.sleep_data = sleep_clean
+        sleep_clean['Date'] = pd.to_datetime(sleep_clean['Sleep_Start'].str.split(' ').str[0]).dt.date 
+        sleep_clean['Sleep_Start_Time'] = sleep_clean['Sleep_Start'].str.split(' ').str[1]
+        sleep_clean['Sleep_End_Time'] = sleep_clean['Sleep_End'].str.split(' ').str[1]
+        
+        # Remove bad data points
+        sleep_clean = sleep_clean[~sleep_clean['Date'].isin(config.BAD_SLEEP_DATES)]
+        
+        # Create complete date range
+        date_range = pd.date_range(
+            start='2020-07-28',  # Original start date from R code
+            end='2024-07-15', # pd.Timestamp.today().date()
+            freq='D'
+        )
+
+        # Create a dataframe with all dates
+        all_dates = pd.DataFrame({'Date': date_range})
+
+        # Convert from datetime to date
+        all_dates['Date'] = all_dates['Date'].dt.date
+
+        # Merge with existing data
+        sleep_clean_all = pd.merge(all_dates, sleep_clean, on='Date', how='left')
+        
+        # Convert time columns to hour as float
+        def time_to_hour(t):
+            return pd.to_datetime(t).hour + pd.to_datetime(t).minute / 60
+        
+        sleep_clean_all['Start_Hour'] = sleep_clean_all['Sleep_Start_Time'].apply(time_to_hour) 
+        sleep_clean_all['End_Hour'] = sleep_clean_all['Sleep_End_Time'].apply(time_to_hour) 
+        
+        # Update self
+        self.sleep_data = sleep_clean_all
         
     def clean_weight_data(self):
         """Clean and process the weight tracking data"""
