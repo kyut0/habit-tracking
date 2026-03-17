@@ -48,7 +48,8 @@ class HabitTracker(HabitPlotter):
         self.df = df_raw.rename(columns=config.CLEAN_COLUMN_NAMES)
         
         # Cleaning and processing functions
-        self.clean_dates()
+        self.fill_dates()
+        self.populate_daily_range()
         self.process_boolean_variables()
         self.process_categorical_variables()
         self.calculate_tracked_habits()
@@ -62,8 +63,8 @@ class HabitTracker(HabitPlotter):
             self.weight_data = pd.read_csv(weight_file)
             self.clean_weight_data()
             
-    def clean_dates(self):
-        """Clean and process dates in the dataframe"""
+    def fill_dates(self):
+        """Populate missing dates in the main tracking data using Submission_DateTime"""
         
         # Fill missing dates with Submission_DateTime
         self.df['Date'] = self.df.apply(
@@ -75,21 +76,27 @@ class HabitTracker(HabitPlotter):
         # Convert from datetime to date
         self.df['Date'] = self.df['Date'].dt.date
 
-        # Create complete date range
-        date_range = pd.date_range(
-            start=config.EXERCISE_START_DATE,  # Original start date from R code
-            end=pd.Timestamp.today().date(),
-            freq='D'
-        )
+    def populate_daily_range(self, df=None, start_date=None, end_date=None):
+        """Ensure there is a row for every date in the range, filling missing dates with NaN values.
 
-        # Create a dataframe with all dates
-        all_dates = pd.DataFrame({'Date': date_range})
+        If df is None, operates on self.df in place.
+        If df is provided, returns a new dataframe with the full date range.
+        start_date and end_date override the min/max from the dataframe.
+        """
+        target = self.df if df is None else df
 
-        # Convert from datetime to date
+        start = start_date if start_date is not None else target['Date'].min()
+        end = end_date if end_date is not None else target['Date'].max()
+
+        all_dates = pd.DataFrame({'Date': pd.date_range(start=start, end=end, freq='D')})
         all_dates['Date'] = all_dates['Date'].dt.date
 
-        # Merge with existing data
-        self.df = pd.merge(all_dates, self.df, on='Date', how='left')
+        result = pd.merge(all_dates, target, on='Date', how='left')
+
+        if df is None:
+            self.df = result
+        else:
+            return result
         
     def process_boolean_variables(self):
         """Convert Yes/No to boolean and handle missing values"""
@@ -136,28 +143,18 @@ class HabitTracker(HabitPlotter):
         sleep_clean['Time_Asleep_hr'] = sleep_clean['Time_Asleep_sec'] / 3600
         sleep_clean['Time_Before_Sleep_hr'] = sleep_clean['Time_Before_Sleep_sec'] / 3600
         
-        sleep_clean['Date'] = pd.to_datetime(sleep_clean['Sleep_Start'].str.split(' ').str[0]).dt.date 
+        sleep_clean['Date'] = pd.to_datetime(sleep_clean['Sleep_Start'].str.split(' ').str[0]).dt.date # I THINK THIS IS WRONG. COMPARE TO R CODE.
         sleep_clean['Sleep_Start_Time'] = sleep_clean['Sleep_Start'].str.split(' ').str[1]
         sleep_clean['Sleep_End_Time'] = sleep_clean['Sleep_End'].str.split(' ').str[1]
         
         # Remove bad data points
         sleep_clean = sleep_clean[~sleep_clean['Date'].isin(config.BAD_SLEEP_DATES)]
         
-        # Create complete date range
-        date_range = pd.date_range(
-            start='2020-07-28',  # Original start date from R code
-            end='2024-07-15', # pd.Timestamp.today().date()
-            freq='D'
+        sleep_clean_all = self.populate_daily_range(
+            df=sleep_clean,
+            start_date='2020-07-28', 
+            end_date='2024-07-15',    
         )
-
-        # Create a dataframe with all dates
-        all_dates = pd.DataFrame({'Date': date_range})
-
-        # Convert from datetime to date
-        all_dates['Date'] = all_dates['Date'].dt.date
-
-        # Merge with existing data
-        sleep_clean_all = pd.merge(all_dates, sleep_clean, on='Date', how='left')
         
         # Convert time columns to hour as float
         def time_to_hour(t):
