@@ -42,26 +42,20 @@ class HabitPlotter:
         
     def plot_monthly_percentages(self, start_date=None):
         """Plot monthly percentages of habits over time"""
-        _, monthly_stats_percent = self.calculate_monthly_stats()
-
-        monthly_stats_percent.reset_index(inplace=True)
-
-        # Create year-month column
-        monthly_stats_percent['Year_Month'] = monthly_stats_percent.apply(
-            lambda x: f"{int(x['Year'])}-{int(x['Month']):02d}", axis=1
-        )
+        df_long = self.df_long.copy()
 
         # Filter by start date if provided
         if start_date:
-            monthly_stats_percent = monthly_stats_percent[
-                monthly_stats_percent['Year_Month'] >= start_date
+            df_long = df_long[
+                df_long['Year_Month'] >= start_date
             ]
 
         plt.figure(figsize=(15, 8))
         
         for var in self.boolean_variables:
-            plt.plot(monthly_stats_percent['Year_Month'], 
-                    monthly_stats_percent[var], 
+            var_data = df_long[df_long['Habit'] == var]
+            plt.plot(var_data['Year_Month'], 
+                    var_data['Percentage'], 
                     label=var, color=config.VAR_COLORS.get(var, 'gray'))
         
         plt.title('Monthly Percentages of Habits')
@@ -71,17 +65,44 @@ class HabitPlotter:
         plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.tight_layout()
         
+    def plot_monthly_summary(self, year_month=None):
+        """Plot a summary of monthly statistics (percentages) for a single month-year (e.g. '2023-06')"""
+        df_long = self.df_long.copy()
+
+        if year_month:
+            df_long = df_long[
+                df_long['Year_Month'] == year_month
+            ]
+            
+        df_long = df_long.sort_values(by='Percentage', ascending=False)
+
+        plt.figure(figsize=(15, 10))
+
+        x = np.arange(len(df_long))
+        n_vars = len(self.boolean_variables)
+        width = 0.8 / n_vars
+        
+        plt.bar(df_long['Habit'], df_long['Percentage'],
+                color=df_long['Habit'].map(config.VAR_COLORS).fillna('gray'))
+
+        # for i, var in enumerate(self.boolean_variables):
+        #     offset = (i - n_vars / 2) * width + width / 2
+        #     plt.bar(x + offset, df_long[df_long['Habit'] == var]['Percentage'], width,
+        #             label=var, color=config.VAR_COLORS.get(var, 'gray'))
+
+        title = f'Monthly Summary of Habits — {year_month}' if year_month else 'Monthly Summary of Habits'
+        plt.title(title)
+        plt.xlabel('Habit')
+        plt.ylabel('Percentage (%)')
+        plt.xticks(df_long['Habit'], rotation=90)
+        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.tight_layout()
+        
     def plot_mental_health_trend(self):
         """Plot mental health trend over time"""
         plt.figure(figsize=(15, 6))
         
-        _, monthly_stats_percent = self.calculate_monthly_stats()
-        monthly_stats_percent.reset_index(inplace=True)
-
-        # Create year-month column
-        monthly_stats_percent['Year_Month'] = monthly_stats_percent.apply(
-            lambda x: f"{int(x['Year'])}-{int(x['Month']):02d}", axis=1
-        )
+        monthly_stats_percent = self.df_monthly_perc.copy()
         
         plt.plot(monthly_stats_percent['Year_Month'], 
                 monthly_stats_percent['Mental_Health'] / 10,
@@ -101,14 +122,7 @@ class HabitPlotter:
     # OTHER VERSION --------------------------------------------------------------
     def plot_monthly_heatmap(self, start_date=None):
         """Plot a heatmap of monthly statistics"""
-        monthly_stats, monthly_stats_percent = self.calculate_monthly_stats()
-
-        monthly_stats_percent.reset_index(inplace=True)
-
-        # Create year-month column
-        monthly_stats_percent['Year_Month'] = monthly_stats_percent.apply(
-            lambda x: f"{int(x['Year'])}-{int(x['Month']):02d}", axis=1
-        )
+        monthly_stats_percent = self.df_monthly_perc.copy()
 
         # Filter by start date if provided
         if start_date:
@@ -301,12 +315,7 @@ class HabitPlotter:
         
     def plot_goal_heatmap(self, start_date=None):
         """Plot a heatmap showing goal achievement"""
-        monthly_stats = self.calculate_monthly_stats()
-        
-        # Create year-month column
-        monthly_stats['Year_Month'] = monthly_stats.apply(
-            lambda x: f"{int(x['Year'])}-{int(x['Month']):02d}", axis=1
-        )
+        monthly_stats = self.df_monthly_perc.copy()
         
         # Filter by start date if provided
         if start_date:
