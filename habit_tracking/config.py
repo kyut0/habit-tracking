@@ -32,14 +32,29 @@ BAD_SLEEP_DATES = [
     '2024-02-26'
 ]
 
+NA_AS_TRUE = {
+    'Made_Bed': True, 
+    'Exercised': False, 
+    'Stretched': False, 
+    'Danced': False, 
+    'Morning_Pages': False, 
+    'Mindfulness': False, 
+    'Caffeine': False, 
+    'Alcohol': False, 
+    'Weed': False, 
+    'Delta8': False,
+}
+
 # Constants
-BOOLEAN_VARIABLES = [
-    'Made_Bed', 'Exercised', 'Stretched', 'Danced', 'Morning_Pages', 
-    'Mindfulness', 'Caffeine', 'Alcohol', 'Weed', 'Delta8', 'Sex', 
-    'Math', 'O', 'Period', 
-    #'Tracked_Habits', 'Collected_Data', 
-    # tracked_habits and collected_data are not in the data, they're calculated in the code
-]
+BOOLEAN_VARIABLES = NA_AS_TRUE.keys()
+
+# [
+#     'Made_Bed', 'Exercised', 'Stretched', 'Danced', 'Morning_Pages', 
+#     'Mindfulness', 'Caffeine', 'Alcohol', 'Weed', 'Delta8', 'Sex', 
+#     'Math', 'O', 'Period', 
+#     #'Tracked_Habits', 'Collected_Data', 
+#     # tracked_habits and collected_data are not in the data, they're calculated in the code
+# ]
 
 VAR_COLORS = {
     'Caffeine': 'brown',
@@ -127,3 +142,9 @@ CLEAN_WEIGHT_COLUMNS = {
     'BMR(kcal)': 'BMR_kcal',
     'Metabolic Age': 'Metabolic_Age'
 }
+
+
+# TOGGLES ===========================================
+INCLUDE_SLEEP_DATA = True
+INCLUDE_WEIGHT_DATA = True
+COMBINE_D8_WEED = True
