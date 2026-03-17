@@ -26,6 +26,12 @@ EXERCISE_START_DATE = '2018-10-22'
 HT_START_DATE = '2022-06-17'
 SLEEP_REFRESH_DATE = '2024-07-16'
 
+BAD_SLEEP_DATES = [
+    '2021-09-14',
+    '2023-11-20',
+    '2024-02-26'
+]
+
 # Constants
 BOOLEAN_VARIABLES = [
     'Made_Bed', 'Exercised', 'Stretched', 'Danced', 'Morning_Pages', 
