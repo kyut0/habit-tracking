@@ -36,6 +36,7 @@ NA_AS_TRUE = {
     'Made_Bed': True, 
     'Exercised': False, 
     'Stretched': False, 
+    'Cold_Plunge': False,
     'Danced': False, 
     'Morning_Pages': False, 
     'Mindfulness': False, 
@@ -43,6 +44,11 @@ NA_AS_TRUE = {
     'Alcohol': False, 
     'Weed': False, 
     'Delta8': False,
+    # 'Collected_Data': False,
+    # 'Tracked_Habits': False,
+    'O': False,
+    'Sex': False,
+    'Math': False
 }
 
 # Constants
