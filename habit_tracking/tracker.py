@@ -3,6 +3,7 @@ from googleapiclient.discovery import build
 from google.oauth2 import service_account
 import io
 from googleapiclient.http import MediaIoBaseDownload
+from numpy.__config__ import CONFIG
 import pandas as pd
 from datetime import timedelta
 import warnings
@@ -50,11 +51,23 @@ class HabitTracker(HabitPlotter):
         # Cleaning and processing functions
         self.fill_dates()
         self.populate_daily_range()
+        self.calculate_tracked_habits()
         self.process_boolean_variables()
         self.process_categorical_variables()
-        self.calculate_tracked_habits()
         self.combine_d8_weed() # if config.COMBINE_D8_WEED is True, this will combine the two variables into one
         # period_dates = self.process_periods() # DO SOMETHING WITH THIS--RETURN OR ADD TO SELF __INIT__
+        
+        self.df_monthly_raw, self.df_monthly_perc = self.calculate_monthly_stats()
+        
+        self.df_monthly_perc.reset_index(inplace=True)
+
+        # Create year-month column
+        self.df_monthly_perc['Year_Month'] = self.df_monthly_perc.apply(
+            lambda x: f"{int(x['Year'])}-{int(x['Month']):02d}", axis=1
+        )
+        
+        self.df_long = pd.melt(self.df_monthly_perc, id_vars=['Year_Month'], value_vars=self.boolean_variables,
+                               var_name='Habit', value_name='Percentage')
         
         # Load additional data if provided
         if sleep_file:
@@ -89,10 +102,13 @@ class HabitTracker(HabitPlotter):
         start = start_date if start_date is not None else target['Date'].min()
         end = end_date if end_date is not None else target['Date'].max()
 
-        all_dates = pd.DataFrame({'Date': pd.date_range(start=start, end=end, freq='D')})
-        all_dates['Date'] = all_dates['Date'].dt.date
+        all_dates = pd.DataFrame({'Date': pd.date_range(start=start, end=end, freq='D').normalize()})
+
+        target = target.copy()
+        target['Date'] = pd.to_datetime(target['Date'])
 
         result = pd.merge(all_dates, target, on='Date', how='left')
+        result['Date'] = result['Date'].dt.date
 
         if df is None:
             self.df = result
@@ -100,9 +116,10 @@ class HabitTracker(HabitPlotter):
             return result
         
     def process_boolean_variables(self):
-        """Convert Yes/No to boolean and handle missing values"""
-        for col in config.BOOLEAN_VARIABLES:
-            self.df[col] = self.df[col].map({'Yes': True, 'No': False})
+        """Convert Yes/No to boolean and handle missing values"""        
+        for col in self.boolean_variables:
+            if col not in config.BOOLEAN_VARIABLES_COMPUTED:
+                self.df[col] = self.df[col].map({'Yes': True, 'No': False})
             self.df[col] = self.df[col].astype('boolean')
             
             # Fill missing values with config.NA_AS_TRUE if specified
@@ -136,6 +153,7 @@ class HabitTracker(HabitPlotter):
         
     def calculate_tracked_habits(self):
         """Calculate whether habits were tracked each day"""
+        
         self.df['Tracked_Habits'] = (
             pd.to_datetime(self.df['Submission_DateTime']).dt.date == 
             pd.to_datetime(self.df['Date']).dt.date
