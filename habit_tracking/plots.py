@@ -105,10 +105,10 @@ class HabitPlotter:
         plt.tight_layout()
         return plt.gcf()
 
-    def plot_sleep_pattern(self, sleep_time=None):
+    def plot_sleep_pattern(self):
         """Plot sleep patterns over time"""
-        if sleep_time is None:
-            sleep_time = self.process_sleep_data()
+        
+        sleep_time = self.sleep_data
             
         if sleep_time is None:
             return None
@@ -118,11 +118,11 @@ class HabitPlotter:
         # Plot sleep segments
         plt.hlines(
             y=sleep_time['Date'],
-            xmin=sleep_time['Sleep_Start_Time'],
-            xmax=sleep_time['Sleep_End_Time'],
+            xmin=sleep_time['Start_Hour'],
+            xmax=sleep_time['End_Hour'],
             color='navy',
             alpha=0.3,
-            linewidth=2
+            linewidth=1
         )
         
         plt.title('Sleep Patterns Over Time')
@@ -213,47 +213,47 @@ class HabitPlotter:
         
         return plt.gcf()
         
-    def plot_body_composition(self):
-        """Plot body composition trends over time"""
-        if self.weight_data is None:
-            return None
+    # def plot_body_composition(self):
+    #     """Plot body composition trends over time"""
+    #     if self.weight_data is None:
+    #         return None
             
-        # Select body composition columns
-        composition_cols = [
-            'Body_Fat', 'Body_Water', 'Skeletal_Muscle',
-            'Subcutaneous_Fat', 'Visceral_Fat'
-        ]
+    #     # Select body composition columns
+    #     composition_cols = [
+    #         'Body_Fat', 'Body_Water', 'Skeletal_Muscle',
+    #         'Subcutaneous_Fat', 'Visceral_Fat'
+    #     ]
         
-        # Create long format data
-        comp_data = self.weight_data.melt(
-            id_vars=['Date'],
-            value_vars=composition_cols,
-            var_name='Metric',
-            value_name='Percentage'
-        )
+    #     # Create long format data
+    #     comp_data = self.weight_data.melt(
+    #         id_vars=['Date'],
+    #         value_vars=composition_cols,
+    #         var_name='Metric',
+    #         value_name='Percentage'
+    #     )
         
-        plt.figure(figsize=(12, 6))
+    #     plt.figure(figsize=(12, 6))
         
-        # Plot each metric
-        for metric in composition_cols:
-            metric_data = comp_data[comp_data['Metric'] == metric]
-            plt.plot(
-                metric_data['Date'],
-                metric_data['Percentage'],
-                label=metric.replace('_', ' '),
-                alpha=0.7,
-                marker='o',
-                markersize=3
-            )
+    #     # Plot each metric
+    #     for metric in composition_cols:
+    #         metric_data = comp_data[comp_data['Metric'] == metric]
+    #         plt.plot(
+    #             metric_data['Date'],
+    #             metric_data['Percentage'],
+    #             label=metric.replace('_', ' '),
+    #             alpha=0.7,
+    #             marker='o',
+    #             markersize=3
+    #         )
         
-        plt.title('Body Composition Trends')
-        plt.xlabel('Date')
-        plt.ylabel('Percentage')
-        plt.grid(True, alpha=0.3)
-        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-        plt.tight_layout()
+    #     plt.title('Body Composition Trends')
+    #     plt.xlabel('Date')
+    #     plt.ylabel('Percentage')
+    #     plt.grid(True, alpha=0.3)
+    #     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    #     plt.tight_layout()
         
-        return plt.gcf()
+    #     return plt.gcf()
         
     def plot_goal_heatmap(self, start_date=None):
         """Plot a heatmap showing goal achievement"""
@@ -328,73 +328,73 @@ class HabitPlotter:
         plt.tight_layout()
         return plt.gcf()
         
-    def plot_habit_timeline(self, start_date=None):
-        """Plot a GitHub-style daily tracker for habits"""
-        if self.df is None:
-            return None
+    # def plot_habit_timeline(self, start_date=None):
+    #     """Plot a GitHub-style daily tracker for habits"""
+    #     if self.df is None:
+    #         return None
             
-        # Convert boolean columns to numeric
-        habit_data = self.df.copy()
-        for col in config.BOOLEAN_VARIABLES:
-            if col in habit_data.columns:
-                habit_data[col] = habit_data[col].fillna(False) # replace NA with 0
-                habit_data[col] = habit_data[col].astype(int) # convert from boolean to int
+    #     # Convert boolean columns to numeric
+    #     habit_data = self.df.copy()
+    #     for col in config.BOOLEAN_VARIABLES:
+    #         if col in habit_data.columns:
+    #             habit_data[col] = habit_data[col].fillna(False) # replace NA with 0
+    #             habit_data[col] = habit_data[col].astype(int) # convert from boolean to int
 
-        # Add period data
-        period_data = habit_data[['Date', 'Period']].copy()
-        period_data['Variable'] = 'Period'
-        period_data = period_data.rename(columns={'Period': 'Value'})
+    #     # Add period data
+    #     period_data = habit_data[['Date', 'Period']].copy()
+    #     period_data['Variable'] = 'Period'
+    #     period_data = period_data.rename(columns={'Period': 'Value'})
 
-        # Prepare habit data
-        habit_data = habit_data.melt(
-            id_vars=['Date'],
-            value_vars=config.BOOLEAN_VARIABLES,
-            var_name='Variable',
-            value_name='Value'
-        )
+    #     # Prepare habit data
+    #     habit_data = habit_data.melt(
+    #         id_vars=['Date'],
+    #         value_vars=config.BOOLEAN_VARIABLES,
+    #         var_name='Variable',
+    #         value_name='Value'
+    #     )
 
-        # Combine data
-        all_data = pd.concat([habit_data, period_data])
+    #     # Combine data
+    #     all_data = pd.concat([habit_data, period_data])
 
-        # Apply color coding
-        def get_value_category(row):
-            if row['Variable'] in ['Math', 'Sex', 'O', 'Period']:
-                return -2 if row['Value'] == 1 else 0
-            elif row['Variable'] in ['Caffeine', 'Alcohol', 'Weed', 'Delta8']:
-                return -1 if row['Value'] == 1 else 0
-            else:
-                return 1 if row['Value'] == 1 else 0
+    #     # Apply color coding
+    #     def get_value_category(row):
+    #         if row['Variable'] in ['Math', 'Sex', 'O', 'Period']:
+    #             return -2 if row['Value'] == 1 else 0
+    #         elif row['Variable'] in ['Caffeine', 'Alcohol', 'Weed', 'Delta8']:
+    #             return -1 if row['Value'] == 1 else 0
+    #         else:
+    #             return 1 if row['Value'] == 1 else 0
                 
-        all_data['Category'] = all_data.apply(get_value_category, axis=1)
+    #     all_data['Category'] = all_data.apply(get_value_category, axis=1)
 
-        # Filter by start date
-        if start_date:
-            all_data[all_data['Date'] >= pd.to_datetime(start_date).date()]
+    #     # Filter by start date
+    #     if start_date:
+    #         all_data[all_data['Date'] >= pd.to_datetime(start_date).date()]
 
-        # Create heatmap
-        plt.figure(figsize=(15, 10))
+    #     # Create heatmap
+    #     plt.figure(figsize=(15, 10))
 
-        pivot_table = all_data.pivot_table(
-            index='Date',
-            columns='Variable',
-            values='Category',
-            aggfunc='sum'
-        )
+    #     pivot_table = all_data.pivot_table(
+    #         index='Date',
+    #         columns='Variable',
+    #         values='Category',
+    #         aggfunc='sum'
+    #     )
 
-        # Custom colormap
-        colors = ['pink', 'red', 'white', 'green']
-        cmap = LinearSegmentedColormap.from_list('custom', colors)
+    #     # Custom colormap
+    #     colors = ['pink', 'red', 'white', 'green']
+    #     cmap = LinearSegmentedColormap.from_list('custom', colors)
 
-        sns.heatmap(
-            pivot_table,
-            cmap=cmap,
-            cbar=True,
-            xticklabels=True,
-            yticklabels=True,
-            center=0
-        )
+    #     sns.heatmap(
+    #         pivot_table,
+    #         cmap=cmap,
+    #         cbar=True,
+    #         xticklabels=True,
+    #         yticklabels=True,
+    #         center=0
+    #     )
 
-        plt.title('Daily Habit Tracker')
-        plt.xticks(rotation=90)
-        plt.tight_layout()
-        # return plt.gcf()
+    #     plt.title('Daily Habit Tracker')
+    #     plt.xticks(rotation=90)
+    #     plt.tight_layout()
+    #     # return plt.gcf()
