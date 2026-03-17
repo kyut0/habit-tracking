@@ -9,8 +9,9 @@ import warnings
 warnings.filterwarnings('ignore')
 
 from habit_tracking import config
+from habit_tracking.plots import HabitPlotter
 
-class HabitTracker:
+class HabitTracker(HabitPlotter):
     def __init__(self):
         self.df = None
         self.sleep_data = None
@@ -38,7 +39,7 @@ class HabitTracker:
         fh.seek(0)
         return pd.read_csv(fh)
 
-    def apply_cleaning(self, service_account_file, spreadsheet_id, sleep_file=None, weight_file=None):
+    def load_and_clean(self, service_account_file, spreadsheet_id, sleep_file=None, weight_file=None):
         """Load and clean all data sources"""
         # Load main tracking data
         df_raw = self.load_google_sheets_data(service_account_file, spreadsheet_id)
@@ -202,5 +203,6 @@ class HabitTracker:
         monthly_stats_percent['Mental_Health'] = mental_health_avg * 10
         
         return monthly_stats_raw, monthly_stats_percent
+
         
     
