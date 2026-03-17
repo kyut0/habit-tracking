@@ -1,7 +1,3 @@
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
-
 [project]
 name = "habit_tracking"
 version = "0.0.1"
@@ -16,17 +12,24 @@ classifiers = [
     "License :: OSI Approved :: MIT License"
 ]
 dependencies = [
-    "loguru",
     "mkdocs",
     "pip",
     "pytest",
     "python-dotenv",
     "ruff",
-    "tqdm",
-    "typer",
+    "pandas>=1.5.0",
+    "numpy>=1.21.0",
+    "matplotlib>=3.5.0",
+    "seaborn>=0.11.0",
+    "google-api-python-client>=2.0.0",
+    "google-auth>=2.0.0",
+    "google-auth-oauthlib>=0.4.0",
 ]
-requires-python = "~=3.10.0"
+requires-python = ">3.13.0"
 
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 line-length = 99
@@ -40,3 +43,8 @@ extend-select = ["I"]  # Add import sorting
 known-first-party = ["habit_tracking"]
 force-sort-within-sections = true
 
+
+[dependency-groups]
+dev = [
+    "ipykernel (>=7.2.0,<8.0.0)"
+]
