@@ -44,15 +44,15 @@ NA_AS_TRUE = {
     'Alcohol': False, 
     'Weed': False, 
     'Delta8': False,
-    # 'Collected_Data': False,
-    # 'Tracked_Habits': False,
+
     'O': False,
     'Sex': False,
     'Math': False
 }
 
 # Constants
-BOOLEAN_VARIABLES = NA_AS_TRUE.keys()
+BOOLEAN_VARIABLES_COMPUTED = ['Tracked_Habits', 'Collected_Data']
+BOOLEAN_VARIABLES = list(NA_AS_TRUE.keys()) + BOOLEAN_VARIABLES_COMPUTED
 
 # [
 #     'Made_Bed', 'Exercised', 'Stretched', 'Danced', 'Morning_Pages', 
