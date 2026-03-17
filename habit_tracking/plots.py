@@ -75,19 +75,26 @@ class HabitPlotter:
         """Plot mental health trend over time"""
         plt.figure(figsize=(15, 6))
         
-        # Convert Mental_Health to numeric
-        mental_health_numeric = pd.to_numeric(self.df['Mental_Health'], errors='coerce')
+        _, monthly_stats_percent = self.calculate_monthly_stats()
+        monthly_stats_percent.reset_index(inplace=True)
+
+        # Create year-month column
+        monthly_stats_percent['Year_Month'] = monthly_stats_percent.apply(
+            lambda x: f"{int(x['Year'])}-{int(x['Month']):02d}", axis=1
+        )
         
-        # Plot the trend
-        plt.plot(self.df['Date'], mental_health_numeric, alpha=0.5)
+        plt.plot(monthly_stats_percent['Year_Month'], 
+                monthly_stats_percent['Mental_Health'] / 10,
+                color='grey')
         
         # Add smoothed trend line
-        window_size = 30  # Adjust as needed
-        rolling_mean = mental_health_numeric.rolling(window=window_size, center=True).mean()
-        plt.plot(self.df['Date'], rolling_mean, color='red', linewidth=2)
+        window_size = 5  # Adjust as needed
+        rolling_mean = monthly_stats_percent['Mental_Health'].rolling(window=window_size, center=True).mean()
+        plt.plot(monthly_stats_percent['Year_Month'], rolling_mean / 10, color='black', linewidth=2)
         
         plt.title('Mental Health Over Time')
         plt.xlabel('Date')
+        plt.xticks(rotation=90)
         plt.ylabel('Mental Health Score (1-10)')
         plt.grid(True, alpha=0.3)
         
