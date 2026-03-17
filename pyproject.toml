@@ -1,0 +1,42 @@
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
+name = "habit_tracking"
+version = "0.0.1"
+description = "A short description of the project."
+authors = [
+  { name = "Katy Yut" },
+]
+license = { file = "LICENSE" }
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License"
+]
+dependencies = [
+    "loguru",
+    "mkdocs",
+    "pip",
+    "pytest",
+    "python-dotenv",
+    "ruff",
+    "tqdm",
+    "typer",
+]
+requires-python = "~=3.10.0"
+
+
+[tool.ruff]
+line-length = 99
+src = ["habit_tracking"]
+include = ["pyproject.toml", "habit_tracking/**/*.py"]
+
+[tool.ruff.lint]
+extend-select = ["I"]  # Add import sorting
+
+[tool.ruff.lint.isort]
+known-first-party = ["habit_tracking"]
+force-sort-within-sections = true
+
