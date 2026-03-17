@@ -56,6 +56,7 @@ class HabitTracker:
         # Load additional data if provided
         if sleep_file:
             self.sleep_data = pd.read_csv(sleep_file)
+            self.process_sleep_data()
         if weight_file:
             self.weight_data = pd.read_csv(weight_file)
             self.clean_weight_data()
