@@ -40,6 +40,37 @@ class HabitPlotter:
         plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.tight_layout()
         
+    def plot_monthly_percentages(self, start_date=None):
+        """Plot monthly percentages of habits over time"""
+        _, monthly_stats_percent = self.calculate_monthly_stats()
+
+        monthly_stats_percent.reset_index(inplace=True)
+
+        # Create year-month column
+        monthly_stats_percent['Year_Month'] = monthly_stats_percent.apply(
+            lambda x: f"{int(x['Year'])}-{int(x['Month']):02d}", axis=1
+        )
+
+        # Filter by start date if provided
+        if start_date:
+            monthly_stats_percent = monthly_stats_percent[
+                monthly_stats_percent['Year_Month'] >= start_date
+            ]
+
+        plt.figure(figsize=(15, 8))
+        
+        for var in self.boolean_variables:
+            plt.plot(monthly_stats_percent['Year_Month'], 
+                    monthly_stats_percent[var], 
+                    label=var, color=config.VAR_COLORS.get(var, 'gray'))
+        
+        plt.title('Monthly Percentages of Habits')
+        plt.xlabel('Month')
+        plt.ylabel('Percentage (%)')
+        plt.xticks(rotation=90)
+        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.tight_layout()
+        
     def plot_mental_health_trend(self):
         """Plot mental health trend over time"""
         plt.figure(figsize=(15, 6))
