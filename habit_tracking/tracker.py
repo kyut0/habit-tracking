@@ -107,7 +107,15 @@ class HabitTracker(HabitPlotter):
             
             # Fill missing values with config.NA_AS_TRUE if specified
             if col in config.NA_AS_TRUE:
-                self.df[col] = self.df[col].fillna(config.NA_AS_TRUE[col])
+                fill_value = config.NA_AS_TRUE[col]
+                if fill_value:
+                    # Before the first real observation, assume False (habit not yet tracked)
+                    # After the first real observation, assume True (NA means habit was done)
+                    first_real = self.df[col].first_valid_index()
+                    self.df.loc[:first_real, col] = self.df.loc[:first_real, col].fillna(False)
+                    self.df[col] = self.df[col].fillna(True)
+                else:
+                    self.df[col] = self.df[col].fillna(False)
             
     def process_categorical_variables(self):
         """Convert categorical variables to proper types"""

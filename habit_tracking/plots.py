@@ -27,10 +27,11 @@ class HabitPlotter:
         """Plot cumulative habits over time"""
         plt.figure(figsize=(15, 8))
         
-        # Plot each variable
+        # Plot each variable, starting from its first non-null observation
         for var in self.boolean_variables:
-            cumsum = self.df[var].fillna(False).cumsum()
-            plt.plot(self.df['Date'], cumsum, 
+            var_data = self.df[['Date', var]].dropna(subset=[var])
+            cumsum = var_data[var].cumsum()
+            plt.plot(var_data['Date'], cumsum,
                     label=var, color=config.VAR_COLORS.get(var, 'gray'))
             
         plt.title('Cumulative Habits Over Time')
