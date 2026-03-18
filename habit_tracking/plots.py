@@ -22,20 +22,6 @@ class HabitPlotter:
     def boolean_variables(self):
         """Returns BOOLEAN_VARIABLES filtered to columns present in self.df (e.g. after combining Delta8/Weed)"""
         return [var for var in config.BOOLEAN_VARIABLES if var in self.df.columns]
-        
-        # REMOVE THIS ---------------------------------------------------------------
-        # self.df_monthly_raw, self.df_monthly_perc = self.calculate_monthly_stats()
-        
-        # self.df_monthly_perc.reset_index(inplace=True)
-
-        # # Create year-month column
-        # self.df_monthly_perc['Year_Month'] = self.df_monthly_perc.apply(
-        #     lambda x: f"{int(x['Year'])}-{int(x['Month']):02d}", axis=1
-        # )
-        
-        # self.df_long = pd.melt(self.df_monthly_perc, id_vars=['Year_Month'], value_vars=self.boolean_variables,
-        #                        var_name='Habit', value_name='Percentage')
-        # ----------------------------------------------------------------------------
     
     def plot_prep(self):
         """Run all necessary data preparation steps for plotting"""
@@ -47,12 +33,14 @@ class HabitPlotter:
         """Generate all plots"""
         self.plot_prep()
         
-        # self.plot_cumulative_habits()
-        # self.plot_monthly_percentages()
-        # self.plot_monthly_summary(year_month='2024-05')
-        # self.plot_mental_health_trend()
-        # self.plot_monthly_heatmap("2022-06")
+        self.plot_total_barchart()
+        self.plot_mental_health_trend()
+        self.plot_monthly_percentages()
         # self.plot_sleep_pattern() # NEED TO FIX DATETIME HANDLING FOR SLEEP PLOT
+        
+        # self.plot_cumulative_habits()
+        # self.plot_monthly_summary(year_month='2024-05')
+        # self.plot_monthly_heatmap()
         # self.plot_sleep_quality()
         # self.plot_weight_trends()
         # self.plot_goal_heatmap()
@@ -76,14 +64,19 @@ class HabitPlotter:
         )
         
     def filter_dates(self, start_date=None, end_date=None):
-        """Filter self.df_long to only include data within the provided date range"""
+        """Filter self.df_long and self.df to only include data within the provided date range"""
         if self.df_long is None:
+            return None
+        
+        if self.df is None:
             return None
         
         if start_date:
             self.df_long = self.df_long[self.df_long['Date'] >= pd.to_datetime(start_date)]
+            self.df = self.df[self.df['Date'] >= pd.to_datetime(start_date)]
         if end_date:
             self.df_long = self.df_long[self.df_long['Date'] <= pd.to_datetime(end_date)]
+            self.df = self.df[self.df['Date'] <= pd.to_datetime(end_date)]
     
     def aggregate_monthly_stats(self):
         """Aggregate daily data to monthly statistics (percentages & counts)"""
@@ -134,7 +127,24 @@ class HabitPlotter:
         plt.xticks(rotation=90)
         plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.tight_layout()
+    
+    def plot_total_barchart(self):
+        """Plot total counts of habits as a bar chart"""
+        df_long = self.df_long.copy()
+        total_counts = df_long.groupby('Habit')['Value'].sum().reset_index()
+        total_counts = total_counts.sort_values(by='Value', ascending=False)
+
+        plt.figure(figsize=(12, 6))
+        plt.bar(total_counts['Habit'], total_counts['Value'],
+                color=total_counts['Habit'].map(config.VAR_COLORS).fillna('gray'))
         
+        plt.title('Total Counts of Habits')
+        plt.xlabel('Habit')
+        plt.ylabel('Total Count')
+        plt.xticks(rotation=90)
+        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.tight_layout()
+    
     def plot_monthly_summary(self, year_month=None):
         """Plot a summary of monthly statistics (percentages) for a single year-month (e.g. '2023-06')"""
         df_long = self.df_monthly_perc.copy()
@@ -181,7 +191,6 @@ class HabitPlotter:
         plt.ylabel('Mental Health Score (1-10)')
         plt.grid(True, alpha=0.3)
         
-    # OTHER VERSION --------------------------------------------------------------
     def plot_monthly_heatmap(self):
         """Plot a heatmap of monthly statistics"""
         heatmap_data = self.df_monthly_perc.copy()
@@ -318,48 +327,6 @@ class HabitPlotter:
         plt.tight_layout()
         
         return plt.gcf()
-        
-    # def plot_body_composition(self):
-    #     """Plot body composition trends over time"""
-    #     if self.weight_data is None:
-    #         return None
-            
-    #     # Select body composition columns
-    #     composition_cols = [
-    #         'Body_Fat', 'Body_Water', 'Skeletal_Muscle',
-    #         'Subcutaneous_Fat', 'Visceral_Fat'
-    #     ]
-        
-    #     # Create long format data
-    #     comp_data = self.weight_data.melt(
-    #         id_vars=['Date'],
-    #         value_vars=composition_cols,
-    #         var_name='Metric',
-    #         value_name='Percentage'
-    #     )
-        
-    #     plt.figure(figsize=(12, 6))
-        
-    #     # Plot each metric
-    #     for metric in composition_cols:
-    #         metric_data = comp_data[comp_data['Metric'] == metric]
-    #         plt.plot(
-    #             metric_data['Date'],
-    #             metric_data['Percentage'],
-    #             label=metric.replace('_', ' '),
-    #             alpha=0.7,
-    #             marker='o',
-    #             markersize=3
-    #         )
-        
-    #     plt.title('Body Composition Trends')
-    #     plt.xlabel('Date')
-    #     plt.ylabel('Percentage')
-    #     plt.grid(True, alpha=0.3)
-    #     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    #     plt.tight_layout()
-        
-    #     return plt.gcf()
         
     def plot_goal_heatmap(self, start_date=None):
         """Plot a heatmap showing goal achievement"""
