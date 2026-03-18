@@ -5,7 +5,13 @@ from dotenv import load_dotenv
 # Load environment variables from .env file if it exists
 load_dotenv()
 
-# Paths
+# DATA ===================================================
+local_filepath = "/Users/katyyut/Desktop/01_Code/GitHub/habit-tracking/"
+SERVICE_ACCOUNT_FILE = f'{local_filepath}habit-tracking-python-379e261c6b6d.json'
+MEDS_ID = '1cbEjP73Khh8x0V0fEtZC1Go8fY9ZQJUu5PeVxC6Tuv0'
+HT_ID = '1LyIl8YRyw8nwP2TWBFAw-oRvDU9xnqj1BRVglntLNrU'
+
+# PATHS ==================================================
 PROJ_ROOT = Path(__file__).resolve().parents[1]
 print(f"PROJ_ROOT path is: {PROJ_ROOT}")
 
