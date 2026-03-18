@@ -66,9 +66,9 @@ class HabitPlotter:
                                var_name='Habit', value_name='Value')   
         
         # Split date into year, month, day
-        self.df_long['Year'] = self.df_long['Date'].dt.year
-        self.df_long['Month'] = self.df_long['Date'].dt.month
-        # self.df_long['Day'] = self.df_long['Date'].dt.day
+        self.df_long['Year'] = pd.to_datetime(self.df_long['Date']).dt.year
+        self.df_long['Month'] = pd.to_datetime(self.df_long['Date']).dt.month
+        # self.df_long['Day'] = pd.to_datetime(self.df_long['Date']).dt.day
         
         # Create year-month column
         self.df_long['Year_Month'] = self.df_long.apply(
@@ -93,6 +93,7 @@ class HabitPlotter:
         # Calculate monthly percentages
         self.df_monthly_perc = self.df_long.groupby(['Year_Month', 'Habit'])['Value'].mean().reset_index()
         self.df_monthly_perc['Percentage'] = self.df_monthly_perc['Value'] * 100
+        self.df_monthly_perc = self.df_monthly_perc.drop(columns=['Value'])
         
         # Calculate monthly counts
         self.df_monthly_raw = self.df_long.groupby(['Year_Month', 'Habit'])['Value'].sum().reset_index()
@@ -115,15 +116,9 @@ class HabitPlotter:
         plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.tight_layout()
         
-    def plot_monthly_percentages(self, start_date=None):
+    def plot_monthly_percentages(self):
         """Plot monthly percentages of habits over time"""
-        df_long = self.df_long.copy()
-
-        # Filter by start date if provided
-        if start_date:
-            df_long = df_long[
-                df_long['Year_Month'] >= start_date
-            ]
+        df_long = self.df_monthly_perc.copy()
 
         plt.figure(figsize=(15, 8))
         
@@ -141,8 +136,8 @@ class HabitPlotter:
         plt.tight_layout()
         
     def plot_monthly_summary(self, year_month=None):
-        """Plot a summary of monthly statistics (percentages) for a single month-year (e.g. '2023-06')"""
-        df_long = self.df_long.copy()
+        """Plot a summary of monthly statistics (percentages) for a single year-month (e.g. '2023-06')"""
+        df_long = self.df_monthly_perc.copy()
 
         if year_month:
             df_long = df_long[
@@ -168,16 +163,17 @@ class HabitPlotter:
         """Plot mental health trend over time"""
         plt.figure(figsize=(15, 6))
         
-        monthly_stats_percent = self.df_monthly_perc.copy()
+        mental_health = self.df[['Date', 'Mental_Health']].copy()
         
-        plt.plot(monthly_stats_percent['Year_Month'], 
-                monthly_stats_percent['Mental_Health'] / 10,
-                color='grey')
+        plt.plot(mental_health['Date'], 
+                mental_health['Mental_Health'],
+                color='grey',
+                alpha=0.5)
         
         # Add smoothed trend line
-        window_size = 5  # Adjust as needed
-        rolling_mean = monthly_stats_percent['Mental_Health'].rolling(window=window_size, center=True).mean()
-        plt.plot(monthly_stats_percent['Year_Month'], rolling_mean / 10, color='black', linewidth=2)
+        window_size = 30  # Adjust as needed
+        rolling_mean = mental_health['Mental_Health'].rolling(window=window_size, center=True, min_periods=1).mean()
+        plt.plot(mental_health['Date'], rolling_mean, color='black', linewidth=2)
         
         plt.title('Mental Health Over Time')
         plt.xlabel('Date')
@@ -186,29 +182,15 @@ class HabitPlotter:
         plt.grid(True, alpha=0.3)
         
     # OTHER VERSION --------------------------------------------------------------
-    def plot_monthly_heatmap(self, start_date=None):
+    def plot_monthly_heatmap(self):
         """Plot a heatmap of monthly statistics"""
-        monthly_stats_percent = self.df_monthly_perc.copy()
-
-        # Filter by start date if provided
-        if start_date:
-            monthly_stats_percent = monthly_stats_percent[
-                monthly_stats_percent['Year_Month'] >= start_date
-            ]
-
-        # Prepare data for heatmap
-        heatmap_data = monthly_stats_percent.melt(
-            id_vars=['Year_Month'],
-            value_vars=self.boolean_variables + ['Mental_Health'],
-            var_name='Variable',
-            value_name='Percentage'
-        )
+        heatmap_data = self.df_monthly_perc.copy()
 
         # Create heatmap
         plt.figure(figsize=(15, 10))
         pivot_table = heatmap_data.pivot(
             index='Year_Month',
-            columns='Variable',
+            columns='Habit',
             values='Percentage'
         )
 
