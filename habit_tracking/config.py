@@ -44,7 +44,7 @@ NA_AS_TRUE = {
     'Alcohol': False, 
     'Weed': False, 
     'Delta8': False,
-
+    'Period': False,
     'O': False,
     'Sex': False,
     'Math': False
