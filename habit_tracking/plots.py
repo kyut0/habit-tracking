@@ -22,7 +22,82 @@ class HabitPlotter:
     def boolean_variables(self):
         """Returns BOOLEAN_VARIABLES filtered to columns present in self.df (e.g. after combining Delta8/Weed)"""
         return [var for var in config.BOOLEAN_VARIABLES if var in self.df.columns]
+        
+        # REMOVE THIS ---------------------------------------------------------------
+        # self.df_monthly_raw, self.df_monthly_perc = self.calculate_monthly_stats()
+        
+        # self.df_monthly_perc.reset_index(inplace=True)
 
+        # # Create year-month column
+        # self.df_monthly_perc['Year_Month'] = self.df_monthly_perc.apply(
+        #     lambda x: f"{int(x['Year'])}-{int(x['Month']):02d}", axis=1
+        # )
+        
+        # self.df_long = pd.melt(self.df_monthly_perc, id_vars=['Year_Month'], value_vars=self.boolean_variables,
+        #                        var_name='Habit', value_name='Percentage')
+        # ----------------------------------------------------------------------------
+    
+    def plot_prep(self):
+        """Run all necessary data preparation steps for plotting"""
+        self.convert_df_to_long()
+        self.filter_dates()
+        self.aggregate_monthly_stats()
+    
+    def plot_all(self):
+        """Generate all plots"""
+        self.plot_prep()
+        
+        # self.plot_cumulative_habits()
+        # self.plot_monthly_percentages()
+        # self.plot_monthly_summary(year_month='2024-05')
+        # self.plot_mental_health_trend()
+        # self.plot_monthly_heatmap("2022-06")
+        # self.plot_sleep_pattern() # NEED TO FIX DATETIME HANDLING FOR SLEEP PLOT
+        # self.plot_sleep_quality()
+        # self.plot_weight_trends()
+        # self.plot_goal_heatmap()
+    
+    def convert_df_to_long(self):
+        """Convert self.df to long format for easier plotting"""
+        if self.df is None:
+            return None
+            
+        self.df_long = pd.melt(self.df, id_vars=['Date'], value_vars=self.boolean_variables,
+                               var_name='Habit', value_name='Value')   
+        
+        # Split date into year, month, day
+        self.df_long['Year'] = self.df_long['Date'].dt.year
+        self.df_long['Month'] = self.df_long['Date'].dt.month
+        # self.df_long['Day'] = self.df_long['Date'].dt.day
+        
+        # Create year-month column
+        self.df_long['Year_Month'] = self.df_long.apply(
+            lambda x: f"{int(x['Year'])}-{int(x['Month']):02d}", axis=1
+        )
+        
+    def filter_dates(self, start_date=None, end_date=None):
+        """Filter self.df_long to only include data within the provided date range"""
+        if self.df_long is None:
+            return None
+        
+        if start_date:
+            self.df_long = self.df_long[self.df_long['Date'] >= pd.to_datetime(start_date)]
+        if end_date:
+            self.df_long = self.df_long[self.df_long['Date'] <= pd.to_datetime(end_date)]
+    
+    def aggregate_monthly_stats(self):
+        """Aggregate daily data to monthly statistics (percentages & counts)"""
+        if self.df_long is None:
+            return None
+            
+        # Calculate monthly percentages
+        self.df_monthly_perc = self.df_long.groupby(['Year_Month', 'Habit'])['Value'].mean().reset_index()
+        self.df_monthly_perc['Percentage'] = self.df_monthly_perc['Value'] * 100
+        
+        # Calculate monthly counts
+        self.df_monthly_raw = self.df_long.groupby(['Year_Month', 'Habit'])['Value'].sum().reset_index()
+        self.df_monthly_raw = self.df_monthly_raw.rename(columns={'Value': 'Count'})
+    
     def plot_cumulative_habits(self):
         """Plot cumulative habits over time"""
         plt.figure(figsize=(15, 8))
