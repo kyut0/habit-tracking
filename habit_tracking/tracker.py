@@ -25,6 +25,8 @@ class HabitTracker(HabitPlotter):
         
         self.sleep_data = None
         self.weight_data = None
+        
+        self.meds_data = None
 
     def load_google_sheets_data(self, service_account_file, spreadsheet_id):
         """Load data from Google Sheets"""
@@ -48,7 +50,11 @@ class HabitTracker(HabitPlotter):
         fh.seek(0)
         return pd.read_csv(fh)
 
-    def load_and_clean(self, service_account_file, spreadsheet_id, sleep_file=None, weight_file=None):
+    def load_and_clean(self, 
+                       service_account_file=config.SERVICE_ACCOUNT_FILE, 
+                       spreadsheet_id=config.HT_ID, 
+                       meds_id=config.MEDS_ID,
+                       sleep_file=None, weight_file=None):
         """Load and clean all data sources"""
         # Load main tracking data
         df_raw = self.load_google_sheets_data(service_account_file, spreadsheet_id)
@@ -72,6 +78,9 @@ class HabitTracker(HabitPlotter):
         if weight_file:
             self.weight_data = pd.read_csv(weight_file)
             self.clean_weight_data()
+            
+        # Medications 
+        self.load_and_clean_meds_data(service_account_file, meds_id)
             
     def fill_dates(self):
         """Populate missing dates in the main tracking data using Submission_DateTime"""
@@ -245,6 +254,25 @@ class HabitTracker(HabitPlotter):
         })
         
         self.period_dates = period_dates
+        
+    def load_and_clean_meds_data(self, service_account_file, meds_id):
+        """Load and clean medications data"""
+        
+        meds_data = self.load_google_sheets_data(service_account_file, meds_id)
+        
+        # Convert to datetime first (stay in datetime64[ns] format)
+        meds_data['Start_Date'] = pd.to_datetime(meds_data['Start_Date'])
+        meds_data['End_Date'] = pd.to_datetime(meds_data['End_Date'], errors='coerce')
+        
+        # Fill the NaT values while they are still Datetime objects
+        # Note: inplace=True is being deprecated in newer pandas; assignment is safer.
+        meds_data['End_Date'] = meds_data['End_Date'].fillna(pd.Timestamp('today'))
+        
+        # Finally, convert both to date objects if you need the YYYY-MM-DD format
+        meds_data['Start_Date'] = meds_data['Start_Date'].dt.date
+        meds_data['End_Date'] = meds_data['End_Date'].dt.date
+        
+        self.meds_data = meds_data
     
     def calculate_monthly_stats(self):
         """Calculate monthly statistics"""
