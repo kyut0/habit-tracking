@@ -2,7 +2,7 @@ from habit_tracking.tracker import HabitTracker
 import argparse
 
 # TO RUN:
-# python -m habit_tracking --ssid 1LyIl8YRyw8nwP2TWBFAw-oRvDU9xnqj1BRVglntLNrU --creds /Users/katyyut/Desktop/01_Code/GitHub/habit-tracking/habit-tracking-python-379e261c6b6d.json --sleep data/raw/20240716_Sleep_Data.csv --weight data/raw/20230911_Weight_Data.csv
+# python -m habit_tracking 
 
 def main(ssid: str, creds: str, sleep_file: str, weight_file: str):
     tracker = HabitTracker()
