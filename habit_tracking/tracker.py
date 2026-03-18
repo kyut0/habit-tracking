@@ -15,6 +15,14 @@ from habit_tracking.plots import HabitPlotter
 class HabitTracker(HabitPlotter):
     def __init__(self):
         self.df = None
+        
+        self.df_long = None
+        
+        self.df_monthly_perc = None
+        self.df_monthly_raw = None
+        
+        self.period_dates = None
+        
         self.sleep_data = None
         self.weight_data = None
 
@@ -55,19 +63,7 @@ class HabitTracker(HabitPlotter):
         self.process_boolean_variables()
         self.process_categorical_variables()
         self.combine_d8_weed() # if config.COMBINE_D8_WEED is True, this will combine the two variables into one
-        # period_dates = self.process_periods() # DO SOMETHING WITH THIS--RETURN OR ADD TO SELF __INIT__
-        
-        self.df_monthly_raw, self.df_monthly_perc = self.calculate_monthly_stats()
-        
-        self.df_monthly_perc.reset_index(inplace=True)
-
-        # Create year-month column
-        self.df_monthly_perc['Year_Month'] = self.df_monthly_perc.apply(
-            lambda x: f"{int(x['Year'])}-{int(x['Month']):02d}", axis=1
-        )
-        
-        self.df_long = pd.melt(self.df_monthly_perc, id_vars=['Year_Month'], value_vars=self.boolean_variables,
-                               var_name='Habit', value_name='Percentage')
+        self.process_periods()
         
         # Load additional data if provided
         if sleep_file:
@@ -230,25 +226,25 @@ class HabitTracker(HabitPlotter):
             
         # Create a copy of period data
         periods = self.df[['Date', 'Period']].copy()
-        
+
         # Calculate changes in period status
-        periods['Binary_Start_End'] = periods['Period'].fillna(0).diff()
-        
+        periods['Binary_Start_End'] = periods['Period'].astype(int).diff()
+
         # Get start dates (where Binary_Start_End == 1)
         starts = periods[periods['Binary_Start_End'] == 1]['Date']
-        
+
         # Get end dates (day before Binary_Start_End == -1)
         ends = periods[periods['Binary_Start_End'] == -1]['Date'].apply(
             lambda x: x - timedelta(days=1)
         )
-        
+
         # Combine into DataFrame
         period_dates = pd.DataFrame({
             'start': starts.values,
             'end': ends.values
         })
         
-        return period_dates
+        self.period_dates = period_dates
     
     def calculate_monthly_stats(self):
         """Calculate monthly statistics"""
