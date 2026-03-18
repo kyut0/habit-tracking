@@ -54,14 +54,6 @@ NA_AS_TRUE = {
 BOOLEAN_VARIABLES_COMPUTED = ['Tracked_Habits', 'Collected_Data']
 BOOLEAN_VARIABLES = list(NA_AS_TRUE.keys()) + BOOLEAN_VARIABLES_COMPUTED
 
-# [
-#     'Made_Bed', 'Exercised', 'Stretched', 'Danced', 'Morning_Pages', 
-#     'Mindfulness', 'Caffeine', 'Alcohol', 'Weed', 'Delta8', 'Sex', 
-#     'Math', 'O', 'Period', 
-#     #'Tracked_Habits', 'Collected_Data', 
-#     # tracked_habits and collected_data are not in the data, they're calculated in the code
-# ]
-
 VAR_COLORS = {
     'Caffeine': 'brown',
     'Weed': 'darkgreen',
