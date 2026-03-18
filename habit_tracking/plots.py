@@ -10,6 +10,8 @@ from datetime import timedelta
 import seaborn as sns
 # from wordcloud import WordCloud
 from matplotlib.colors import LinearSegmentedColormap
+import matplotlib.cm as cm
+from matplotlib.lines import Line2D
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -219,6 +221,45 @@ class HabitPlotter:
         plt.xticks(rotation=90)
         plt.tight_layout()
         return plt.gcf()
+
+    def plot_medications(self):
+        """Plot medication usage over time"""
+        if self.meds_data is None:
+            return None
+            
+        meds_data = self.meds_data.copy()
+        
+        # Create a unique list of medication types
+        unique_meds = meds_data['Medication_Generic'].unique()
+
+        # Generate a color palette (using 'tab10' or 'Set1' for distinct colors)
+        colors = cm.get_cmap('tab10', len(unique_meds))
+        color_map = {med: colors(i) for i, med in enumerate(unique_meds)}
+
+        # Map the column to these colors
+        med_colors = meds_data['Medication_Generic'].map(color_map)
+
+        # Plot
+        plt.figure(figsize=(15, 10))
+        plt.hlines(
+            y=meds_data['Dose (mg)'],
+            xmin=meds_data['Start_Date'],
+            xmax=meds_data['End_Date'],
+            colors=med_colors, # Note: plt.hlines uses 'colors' (plural) for sequences
+            alpha=0.6,
+            linewidth=3
+        )
+        
+        plt.title('Medication Usage Over Time')
+        plt.xlabel('Date')
+        plt.ylabel('Dose (mg)')
+        plt.xticks(rotation=90)
+        plt.grid(True, alpha=0.3)
+        
+        legend_elements = [Line2D([0], [0], color=color_map[med], lw=4, label=med) 
+                        for med in unique_meds]
+        plt.legend(handles=legend_elements, title="Medication", bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.tight_layout()
 
     def plot_sleep_pattern(self):
         """Plot sleep patterns over time"""
