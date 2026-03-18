@@ -77,18 +77,9 @@ class HabitPlotter:
         df_long = df_long.sort_values(by='Percentage', ascending=False)
 
         plt.figure(figsize=(15, 10))
-
-        x = np.arange(len(df_long))
-        n_vars = len(self.boolean_variables)
-        width = 0.8 / n_vars
         
         plt.bar(df_long['Habit'], df_long['Percentage'],
                 color=df_long['Habit'].map(config.VAR_COLORS).fillna('gray'))
-
-        # for i, var in enumerate(self.boolean_variables):
-        #     offset = (i - n_vars / 2) * width + width / 2
-        #     plt.bar(x + offset, df_long[df_long['Habit'] == var]['Percentage'], width,
-        #             label=var, color=config.VAR_COLORS.get(var, 'gray'))
 
         title = f'Monthly Summary of Habits — {year_month}' if year_month else 'Monthly Summary of Habits'
         plt.title(title)
