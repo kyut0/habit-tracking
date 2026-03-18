@@ -62,12 +62,14 @@ VAR_COLORS = {
     'Stretched': 'lightblue',
     'Made_Bed': 'darkorange',
     'Morning_Pages': 'tan',
+    'Cold_Plunge': 'cyan',
     'Mindfulness': 'white',
     'Danced': 'purple',
     'Alcohol': 'yellow',
     'Sex': 'red',
     'Math': 'pink',
     'O': 'gold',
+    'Period': 'magenta',
     'Tracked_Habits': 'black',
     'Collected_Data': 'grey'
 }
