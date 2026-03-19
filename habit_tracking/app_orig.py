@@ -220,108 +220,20 @@ with row6_2:
     
 row7_spacer1, row7_1, row7_spacer2 = st.columns((0.1, 3.2, 0.1))
 
-with row7_1:
-    st.header("**Book List Recommendation for {}**".format("Katy Yut"))
+# with row7_1:
+#     st.header("**Book List Recommendation for {}**".format("Katy Yut"))
     
-    st.markdown(
-        "For one last bit of analysis, we scraped a few hundred book lists from famous thinkers in technology, media, and government (everyone from Barack and Michelle Obama to Keith Rabois and Naval Ravikant). We took your list of books read and tried to recommend one of their lists to book through based on information we gleaned from your list"
-    )
-    st.markdown(
-        "You read the most books in common with **{}**, and your book list is the most similar on average to **{}**. Find their book lists [here]({}) and [here]({}) respectively.".format(
-            "N/A", "N/A", "#", "#"
-        )
-    )
-
-
-    st.markdown("***")
-    st.markdown(
-        "Thanks for going through this mini-analysis with me! I'd love feedback on this, so if you want to reach out you can find me on [twitter](https://twitter.com/tylerjrichards) or my [website](http://www.tylerjrichards.com/)."
-    )
-
-
-
-    
-# ── MAIN PANEL ─────────────────────────────────────────────────────────────────
-
-# st.title("Some Title Here")
-
-# with st.expander("Instructions:"):
-#     st.markdown("""
-#         \n1. Insert. 
-#         \n2. Something.
-#         \n3. Here.""")
-
-# render_metrics(current_df, loaded_files)
-
-# render_data_views(
-#     ordered_df[mask_failed], ordered_df[mask_acted], ordered_df[mask_passed],
-#     column_config, valid_overwrite_targets, is_locked, editor_key_suffix,
-# )
-
-# render_error_summary(current_df)
-
-
-
-# def render_metrics(current_df: pd.DataFrame, loaded_files: list[str]) -> None:
-#     """Renders the summary stats row and file editing label."""
-#     st.markdown("### Summary Stats")
-
-#     num_samples = len(current_df)
-#     passed      = int(current_df["qc_passed"].sum()) if "qc_passed" in current_df.columns else 0
-#     failed      = num_samples - passed
-#     pass_rate   = (passed / num_samples * 100) if num_samples > 0 else 0
-
-#     m1, m2, m3, m4 = st.columns(4)
-#     m1.metric("Failures",      f"{100 - pass_rate:.1f}%", delta=f"{failed} Issues",  delta_color="inverse")
-#     m2.metric("Passes",        f"{pass_rate:.1f}%",       delta=f"{passed} Passed")
-#     m3.metric("Total Samples", num_samples)
-
-#     current_queue_size = len(st.session_state.queue)
-#     files_completed    = list(st.session_state.status.values()).count(QCStatus.UPLOADED)
-#     m4.metric("Files Completed", f"{files_completed} / {current_queue_size}")
-
-#     st.progress(pass_rate / 100)
-#     st.markdown("#### Editing:\n" + "\n".join(f"- {fn}" for fn in loaded_files))
-
-# def render_data_views(
-#     df_failed: pd.DataFrame,
-#     df_acted: pd.DataFrame,
-#     df_passed: pd.DataFrame,
-#     column_config: dict,
-#     valid_overwrite_targets: list[str],
-#     is_locked: bool,
-#     editor_key_suffix: str,
-# ) -> None:
-#     """Renders the three data editor sections: failures, pending actions, passed."""
-#     # SECTION 1: FAILURES
-#     st.error(f"Failures Requiring Triage ({len(df_failed)})")
-#     if not df_failed.empty:
-#         st.data_editor(
-#             df_failed, column_config=column_config, width="stretch",
-#             key=f"ed_fail_{editor_key_suffix}", disabled=is_locked,
+#     st.markdown(
+#         "For one last bit of analysis, we scraped a few hundred book lists from famous thinkers in technology, media, and government (everyone from Barack and Michelle Obama to Keith Rabois and Naval Ravikant). We took your list of books read and tried to recommend one of their lists to book through based on information we gleaned from your list"
+#     )
+#     st.markdown(
+#         "You read the most books in common with **{}**, and your book list is the most similar on average to **{}**. Find their book lists [here]({}) and [here]({}) respectively.".format(
+#             "N/A", "N/A", "#", "#"
 #         )
-#     else:
-#         st.success("No unaddressed failures found.")
+#     )
 
-#     # SECTION 2: PENDING ACTIONS
-#     st.warning(f"Pending Actions & Overwrites ({len(df_acted)})")
-#     if not df_acted.empty:
-#         st.markdown("The changes below will be processed upon clicking 'Validate Edits'.")
-#         st.data_editor(
-#             df_acted, column_config=column_config, width="stretch",
-#             key=f"ed_acted_{editor_key_suffix}", disabled=is_locked,
-#         )
-#     else:
-#         st.caption("No actions currently pending.")
 
-#     # SECTION 3: PASSED
-#     st.success(f"Passed & Verified Records ({len(df_passed)})")
-#     cols_to_show      = [c for c in df_passed.columns if c not in (DataSchema.HITL_COLUMNS + DataSchema.ERROR_COLUMNS)]
-#     display_passed_df = df_passed[[c for c in cols_to_show if c in df_passed.columns]]
-#     pass_config       = get_column_config(display_passed_df.columns, valid_overwrite_targets)
-
-#     with st.expander("View Passed Records", expanded=df_failed.empty):
-#         st.data_editor(
-#             display_passed_df, column_config=pass_config, width="stretch",
-#             key=f"ed_pass_{editor_key_suffix}", disabled=True,
-#         )
+#     st.markdown("***")
+#     st.markdown(
+#         "Thanks for going through this mini-analysis with me! I'd love feedback on this, so if you want to reach out you can find me on [twitter](https://twitter.com/tylerjrichards) or my [website](http://www.tylerjrichards.com/)."
+#     )
