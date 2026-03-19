@@ -54,7 +54,8 @@ class HabitTracker(HabitPlotter):
                        service_account_file=config.SERVICE_ACCOUNT_FILE, 
                        spreadsheet_id=config.HT_ID, 
                        meds_id=config.MEDS_ID,
-                       sleep_file=None, weight_file=None):
+                       sleep_file="/Users/katyyut/Desktop/01_Code/GitHub/habit-tracking/data/raw/20240716_Sleep_Data.csv", 
+                       weight_file="/Users/katyyut/Desktop/01_Code/GitHub/habit-tracking/data/raw/20230911_Weight_Data.csv"):
         """Load and clean all data sources"""
         # Load main tracking data
         df_raw = self.load_google_sheets_data(service_account_file, spreadsheet_id)
