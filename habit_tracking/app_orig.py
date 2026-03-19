@@ -53,12 +53,20 @@ row0_1.title("Habit Tracking Dashboard")
 with row0_2:
     add_vertical_space()
 
-row0_2.subheader(
-    "A Streamlit web app by [Katy Yut](http://www.katyyut.com)."
-)
+# row0_2.subheader(
+#     "A Streamlit web app by [Katy Yut](http://www.katyyut.com)."
+# )
+
+past_week = tracker.df_long[tracker.df_long['Date'] >= (pd.Timestamp.today().date() - pd.Timedelta(days=7))].groupby('Habit')['Value'].sum().reset_index()
+past_week_filtered = past_week[past_week['Habit'].isin(selected_habits)]
+past_week_lines = "\n".join(
+        f"- {row['Habit']}: {row['Value']} days"
+        for _, row in past_week_filtered.iterrows()
+    )
 
 row0_2.subheader(
-    "7-day Summary:"
+    "7-day Summary:  \n"
+    f"{past_week_lines}"
 )
 
 row1_spacer1, row1_1, row1_spacer2 = st.columns((0.1, 3.2, 0.1))
@@ -88,7 +96,7 @@ with row3_1:
     st.subheader("Monthly Percentages")
 
     fig, legend_fig = tracker.plot_monthly_percentages(selected_habits=selected_habits)
-    plot_col, legend_col = st.columns([4, 1])
+    plot_col, legend_col = st.columns([6, 1])
     with plot_col:
         st.pyplot(fig, use_container_width=True)
     with legend_col:
@@ -149,11 +157,24 @@ with row5_1:
     st.markdown(
         ""
     )
+    
+with row5_2:
+    st.subheader("Monthly Goal Achievement")
+   
+    fig, _ = tracker.plot_monthly_goal_achievement()
+    st.pyplot(fig, use_container_width=True)
+    st.markdown(
+        ""
+    )
+    st.markdown(
+        ""
+    )
 
 add_vertical_space()
 row6_space1, row6_1, row6_space2, row6_2, row6_space3 = st.columns(
     (0.1, 1, 0.1, 1, 0.1)
 )
+
 
 with row6_1:
     st.subheader("Diary")
