@@ -208,12 +208,18 @@ class HabitPlotter:
             index='Year_Month', columns='Habit', values='Percentage'
         )
         pivot_table = pivot_table.astype(float).fillna(0)
-
+        col_order = ["Collected_Data", "Tracked_Habits", "Made_Bed", "Exercised",
+                     "Stretched", "Cold_Plunge", "Morning_Pages", "Mindfulness", "Caffeine", "Alcohol",
+                     "Weed", "Delta8", "Danced", "Math", "Sex", "O", "Mental_Health"]
+        pivot_table = pivot_table.reindex(columns=[c for c in col_order if c in pivot_table.columns])
+        
         fig, ax = plt.subplots(figsize=(15, 10))
         sns.heatmap(pivot_table, cmap='magma_r', cbar_kws={'label': 'Percentage'},
-                    xticklabels=True, yticklabels=True, ax=ax)
+                    xticklabels=True, yticklabels=True, square=True, ax=ax)
 
         self._apply_style(ax, title='Monthly Percentages Heatmap')
+        ax.xaxis.tick_top()
+        ax.xaxis.set_label_position('top')
 
         return fig, None
 
