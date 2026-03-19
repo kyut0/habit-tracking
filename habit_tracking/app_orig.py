@@ -7,7 +7,7 @@
 # streamlit run habit-tracking/habit_tracking/app_orig.py
 
 # Load packages
-from habit_tracking import config
+import config
 from tracker import HabitTracker
 import argparse
 import streamlit as st
