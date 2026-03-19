@@ -154,21 +154,15 @@ row5_space1, row5_1, row5_space2 = st.columns(
 )
 
 with row5_1:
-    st.subheader("Medications")
-    
-    fig, legend_fig = tracker.plot_medications()
-    if fig is not None:
-        plot_col, legend_col = st.columns([4, 1])
-        with plot_col:
-            st.pyplot(fig, use_container_width=True)
-        with legend_col:
-            if legend_fig:
-                st.pyplot(legend_fig, use_container_width=True)
-
+    st.subheader("Monthly Heatmap")
+   
+    fig, _ = tracker.plot_monthly_heatmap()
+    st.pyplot(fig, use_container_width=True)
     st.markdown(
-        "Your average book length is **{} pages**, and your longest book read is **{} at {} pages!**.".format(
-            0, "N/A", 0
-        )
+        "Here you can see the gender distribution over time to see how your reading habits may have changed."
+    )
+    st.markdown(
+        "Want to read more books written by women? [Here](https://www.penguin.co.uk/articles/2019/mar/best-books-by-female-authors.html) is a great list from Penguin that should be a good start."
     )
     
 # with row5_2:
@@ -194,27 +188,38 @@ row6_space1, row6_1, row6_space2, row6_2, row6_space3 = st.columns(
 with row6_1:
     st.subheader("Diary")
     
+    diary = tracker.df[['Date', 'Other_notes']].dropna().sort_values('Date', ascending=False)
+    st.dataframe(diary, hide_index=True)
     
     st.markdown(
-        "To get the gender breakdown of the books you have read, this next bit takes the first name of the authors and uses that to predict their gender. These algorithms are far from perfect, and tend to miss non-Western/non-English genders often so take this graph with a grain of salt."
+        ""
     )
     st.markdown(
-        "Note: the package I'm using for this prediction outputs 'andy', which stands for androgenous, whenever multiple genders are nearly equally likely (at some threshold of confidence). It is not, sadly, a prediction of a new gender called andy."
-    )
-
-with row6_2:
-    st.subheader("Monthly Heatmap")
-   
-    fig, _ = tracker.plot_monthly_heatmap()
-    st.pyplot(fig, use_container_width=True)
-    st.markdown(
-        "Here you can see the gender distribution over time to see how your reading habits may have changed."
-    )
-    st.markdown(
-        "Want to read more books written by women? [Here](https://www.penguin.co.uk/articles/2019/mar/best-books-by-female-authors.html) is a great list from Penguin that should be a good start."
+        ""
     )
 
 add_vertical_space()
+
+with row6_2:
+    st.subheader("Medications")
+    
+    fig, legend_fig = tracker.plot_medications()
+    if fig is not None:
+        plot_col, legend_col = st.columns([4, 1])
+        with plot_col:
+            st.pyplot(fig, use_container_width=True)
+        with legend_col:
+            if legend_fig:
+                st.pyplot(legend_fig, use_container_width=True)
+
+    curr_meds = tracker.meds_data[tracker.meds_data['End_Date'] == pd.Timestamp.today().date()]
+
+    med_lines = "\n".join(
+        f"- {row['Medication_Generic']} (aka {row['Medication_Brand']}) — {row['Dose (mg)']} mg"
+        for _, row in curr_meds.iterrows()
+    )
+    st.markdown(f"You are currently taking:\n{med_lines}")
+    
 row7_spacer1, row7_1, row7_spacer2 = st.columns((0.1, 3.2, 0.1))
 
 with row7_1:
