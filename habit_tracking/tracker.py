@@ -30,10 +30,13 @@ class HabitTracker(HabitPlotter):
 
     def load_google_sheets_data(self, service_account_file, spreadsheet_id):
         """Load data from Google Sheets"""
-        credentials = service_account.Credentials.from_service_account_file(
-            service_account_file,
-            scopes=['https://www.googleapis.com/auth/drive.readonly']
-        )
+        if isinstance(service_account_file, str):
+            credentials = service_account.Credentials.from_service_account_file(
+                service_account_file,
+                scopes=['https://www.googleapis.com/auth/drive.readonly']
+            )
+        else:
+            credentials = service_account_file
         
         service = build('drive', 'v3', credentials=credentials)
         request = service.files().export_media(

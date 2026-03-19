@@ -13,8 +13,13 @@ import argparse
 import streamlit as st
 from streamlit_extras.add_vertical_space import add_vertical_space
 import pandas as pd
+from google.oauth2 import service_account
 
 st.set_page_config(layout="wide", page_title="Habit Tracking Dashboard")
+
+# Load credentials from Streamlit Secrets
+creds_dict = st.secrets["gcp_service_account"]
+credentials = service_account.Credentials.from_service_account_info(creds_dict)
 
 # ── SESSION STATE ──────────────────────────────────────────────────────────────
 for _key, _default in {
@@ -38,7 +43,7 @@ with st.sidebar:
 
 # --- PROCESSING -----------------------------------------------------
 tracker = HabitTracker()
-tracker.load_and_clean()
+tracker.load_and_clean(service_account_file=credentials)
 tracker.plot_prep(start_date=selected_date_range[0], end_date=selected_date_range[1])
 
 
