@@ -54,7 +54,7 @@ row1_spacer1, row1_1, row1_spacer2 = st.columns((0.1, 3.2, 0.1))
 
 with row0_1:
     st.markdown(
-        "Hey there! Welcome to Tyler's Goodreads Analysis App. This app scrapes (and never keeps or stores!) the books you've read and analyzes data about your book list, including estimating the gender breakdown of the authors, and looking at the distribution of the age and length of book you read. After some nice graphs, it tries to recommend a curated book list to you from a famous public reader, like Barack Obama or Bill Gates. One last tip, if you're on a mobile device, switch over to landscape for viewing ease. Give it a go!"
+        "Hello and welcome to Katy's spectacular habit tracking app."
     )
     st.markdown(
         "**To begin, please enter the link to your [Goodreads profile](https://www.goodreads.com/) (or just use mine!).** 👇"
@@ -62,16 +62,6 @@ with row0_1:
 
 row2_spacer1, row2_1, row2_spacer2 = st.columns((0.1, 3.2, 0.1))
 with row2_1:
-    default_username = st.selectbox(
-        "Select one of our sample Goodreads profiles",
-        (
-            "89659767-tyler-richards",
-            "7128368-amanda",
-            "17864196-adrien-treuille",
-            "133664988-jordan-pierre",
-        ),
-    )
-    st.markdown("**or**")
     user_input = st.text_input(
         "Input your own Goodreads Link (e.g. https://www.goodreads.com/user/show/89659767-tyler-richards)"
     )
@@ -81,9 +71,6 @@ with row2_1:
             "Having trouble finding your Goodreads profile? Head to the [Goodreads website](https://www.goodreads.com/) and click profile in the top right corner."
         )
 
-    if not user_input:
-        user_input = f"https://www.goodreads.com/user/show/{default_username}"
-
 
 st.write("")
 row3_space1, row3_1, row3_space2 = st.columns(
@@ -91,43 +78,9 @@ row3_space1, row3_1, row3_space2 = st.columns(
 )
 
 with row3_1:
-    st.subheader("Habit Totals")
-    
-    st.plotly_chart(tracker.plot_total_barchart(), theme="streamlit", width='stretch')
-    st.markdown(
-        "It looks like you've read a grand total of **{} books with {} authors,** with {} being your most read author! That's awesome. Here's what your reading habits look like since you've started using Goodreads.".format(
-            4, 6, 9
-        )
-    )
-    
-st.write("")
-row3_space1, row3_2, row3_space2 = st.columns(
-    (0.1, 2.1, 0.1)
-)
-    
-with row3_2:
-    st.subheader("Mental Health")
-
-    st.plotly_chart(tracker.plot_mental_health_trend(), theme="streamlit", width='stretch')
-
-    st.markdown(
-        "Looks like the average publication date is around **{}**, with your oldest book being **{}** and your youngest being **{}**.".format(
-            "N/A", "N/A", "N/A"
-        )
-    )
-    st.markdown(
-        "Note that the publication date on Goodreads is the **last** publication date, so the data is altered for any book that has been republished by a publisher."
-    )
-
-add_vertical_space()
-row4_space1, row4_1, row4_space2 = st.columns(
-    (0.1, 2.1, 0.1)
-)
-
-with row4_1:
     st.subheader("Monthly Percentages")
     
-    st.plotly_chart(tracker.plot_monthly_percentages(), theme="streamlit", width='stretch')
+    st.pyplot(tracker.plot_monthly_percentages(), width='stretch')
 
     if 1 > 0:
         st.markdown(
@@ -141,7 +94,41 @@ with row4_1:
                 abs(round(7, 3)), 0, 0, 0
             )
         )
+    
+st.write("")
+row3_space1, row3_2, row3_space2 = st.columns(
+    (0.1, 2.1, 0.1)
+)
 
+with row3_2:
+    st.subheader("Habit Totals")
+    
+    st.pyplot(tracker.plot_total_barchart(), use_container_width=True)
+    st.markdown(
+        "It looks like you've read a grand total of **{} books with {} authors,** with {} being your most read author! That's awesome. Here's what your reading habits look like since you've started using Goodreads.".format(
+            4, 6, 9
+        )
+    )
+
+add_vertical_space()
+row4_space1, row4_1, row4_space2 = st.columns(
+    (0.1, 2.1, 0.1)
+)
+    
+with row4_1:
+    st.subheader("Mental Health")
+
+    st.pyplot(tracker.plot_mental_health_trend(), width='stretch')
+
+    st.markdown(
+        "Looks like the average publication date is around **{}**, with your oldest book being **{}** and your youngest being **{}**.".format(
+            "N/A", "N/A", "N/A"
+        )
+    )
+    st.markdown(
+        "Note that the publication date on Goodreads is the **last** publication date, so the data is altered for any book that has been republished by a publisher."
+    )
+    
 add_vertical_space()
 row5_space1, row5_1, row5_space2 = st.columns(
     (0.1, 2.1, 0.1)
@@ -150,7 +137,7 @@ row5_space1, row5_1, row5_space2 = st.columns(
 with row5_1:
     st.subheader("Medications")
     
-    st.plotly_chart(tracker.plot_medications(), theme="streamlit", width='stretch')
+    st.pyplot(tracker.plot_medications(), width='stretch')
 
     st.markdown(
         "Your average book length is **{} pages**, and your longest book read is **{} at {} pages!**.".format(
@@ -163,7 +150,7 @@ with row5_1:
     
 #     sleep_fig = tracker.plot_sleep_pattern()
 #     if sleep_fig is not None:
-#         st.plotly_chart(sleep_fig, theme="streamlit", width='stretch')
+#         st.pyplot(sleep_fig, theme="streamlit", width='stretch')
 #     else:
 #         st.info("No sleep data available.")
     
@@ -181,7 +168,7 @@ row6_space1, row6_1, row6_space2, row6_2, row6_space3 = st.columns(
 # with row6_1:
 #     st.subheader("Cumulative Habits")
     
-#     st.plotly_chart(tracker.plot_cumulative_habits(), theme="streamlit", width='stretch')
+#     st.pyplot(tracker.plot_cumulative_habits(), theme="streamlit", width='stretch')
 #     st.markdown(
 #         "To get the gender breakdown of the books you have read, this next bit takes the first name of the authors and uses that to predict their gender. These algorithms are far from perfect, and tend to miss non-Western/non-English genders often so take this graph with a grain of salt."
 #     )
@@ -192,7 +179,7 @@ row6_space1, row6_1, row6_space2, row6_2, row6_space3 = st.columns(
 with row6_2:
     st.subheader("Monthly Heatmap")
    
-    st.plotly_chart(tracker.plot_monthly_heatmap(), theme="streamlit", width='stretch')
+    st.pyplot(tracker.plot_monthly_heatmap(), width='stretch')
     st.markdown(
         "Here you can see the gender distribution over time to see how your reading habits may have changed."
     )
