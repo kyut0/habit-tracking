@@ -111,6 +111,8 @@ class HabitPlotter:
         plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.tight_layout()
         
+        return plt.gcf()
+        
     def plot_monthly_percentages(self):
         """Plot monthly percentages of habits over time"""
         df_long = self.df_monthly_perc.copy()
@@ -129,6 +131,8 @@ class HabitPlotter:
         plt.xticks(rotation=90)
         plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.tight_layout()
+        
+        return plt.gcf()    
     
     def plot_total_barchart(self):
         """Plot total counts of habits as a bar chart"""
@@ -146,6 +150,8 @@ class HabitPlotter:
         plt.xticks(rotation=90)
         plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.tight_layout()
+        
+        return plt.gcf()
     
     def plot_monthly_summary(self, year_month=None):
         """Plot a summary of monthly statistics (percentages) for a single year-month (e.g. '2023-06')"""
@@ -171,6 +177,8 @@ class HabitPlotter:
         plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.tight_layout()
         
+        return plt.gcf()
+        
     def plot_mental_health_trend(self):
         """Plot mental health trend over time"""
         plt.figure(figsize=(15, 6))
@@ -192,6 +200,8 @@ class HabitPlotter:
         plt.xticks(rotation=90)
         plt.ylabel('Mental Health Score (1-10)')
         plt.grid(True, alpha=0.3)
+        
+        return plt.gcf()
         
     def plot_monthly_heatmap(self):
         """Plot a heatmap of monthly statistics"""
@@ -220,6 +230,7 @@ class HabitPlotter:
         plt.title('Monthly Percentages Heatmap')
         plt.xticks(rotation=90)
         plt.tight_layout()
+        
         return plt.gcf()
 
     def plot_medications(self):
@@ -260,6 +271,8 @@ class HabitPlotter:
                         for med in unique_meds]
         plt.legend(handles=legend_elements, title="Medication", bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.tight_layout()
+        
+        return plt.gcf()
 
     def plot_sleep_pattern(self):
         """Plot sleep patterns over time"""
@@ -295,6 +308,7 @@ class HabitPlotter:
         
         plt.grid(True, alpha=0.3)
         plt.tight_layout()
+        
         return plt.gcf()
         
     def plot_sleep_quality(self):
@@ -435,6 +449,7 @@ class HabitPlotter:
         plt.title('Monthly Goal Achievement')
         plt.xticks(rotation=90)
         plt.tight_layout()
+        
         return plt.gcf()
         
     # def plot_habit_timeline(self, start_date=None):
