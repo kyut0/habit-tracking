@@ -276,15 +276,14 @@ class HabitPlotter:
 
     def plot_sleep_pattern(self):
         """Plot sleep patterns over time"""
-        
+
         sleep_time = self.sleep_data
-            
+
         if sleep_time is None:
             return None
-            
+
         plt.figure(figsize=(15, 10))
-        
-        # Plot sleep segments
+
         plt.hlines(
             y=sleep_time['Date'],
             xmin=sleep_time['Start_Hour'],
@@ -293,22 +292,20 @@ class HabitPlotter:
             alpha=0.3,
             linewidth=1
         )
-        
+
         plt.title('Sleep Patterns Over Time')
         plt.xlabel('Time of Day (Hours)')
         plt.ylabel('Date')
-        
-        # Set x-axis limits to show 24-hour period
-        plt.xlim(20, 32)  # Show 8pm to 8am next day
-        
-        # Custom x-axis labels
+
+        plt.xlim(20, 32)
+
         xticks = range(20, 33, 2)
         xtick_labels = [f"{h%24:02d}:00" for h in xticks]
         plt.xticks(xticks, xtick_labels)
-        
+
         plt.grid(True, alpha=0.3)
         plt.tight_layout()
-        
+
         return plt.gcf()
         
     def plot_sleep_quality(self):
