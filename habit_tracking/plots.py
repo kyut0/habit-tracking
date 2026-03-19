@@ -208,18 +208,74 @@ class HabitPlotter:
             index='Year_Month', columns='Habit', values='Percentage'
         )
         pivot_table = pivot_table.astype(float).fillna(0)
-        col_order = ["Collected_Data", "Tracked_Habits", "Made_Bed", "Exercised",
-                     "Stretched", "Cold_Plunge", "Morning_Pages", "Mindfulness", "Caffeine", "Alcohol",
-                     "Weed", "Delta8", "Danced", "Math", "Sex", "O", "Mental_Health"]
+        col_order = config.GOAL_COLS.keys()
         pivot_table = pivot_table.reindex(columns=[c for c in col_order if c in pivot_table.columns])
         
-        fig, ax = plt.subplots(figsize=(15, 10))
-        sns.heatmap(pivot_table, cmap='magma_r', cbar_kws={'label': 'Percentage'},
+        fig = plt.figure(figsize=(15, 11))
+        gs = fig.add_gridspec(2, 1, height_ratios=[10, 0.4], hspace=0.05)
+        ax = fig.add_subplot(gs[0])
+        cbar_ax = fig.add_subplot(gs[1])
+
+        sns.heatmap(pivot_table, cmap='magma_r',
+                    cbar_ax=cbar_ax, cbar_kws={'label': 'Percentage (%)', 'orientation': 'horizontal'},
                     xticklabels=True, yticklabels=True, square=True, ax=ax)
 
         self._apply_style(ax, title='Monthly Percentages Heatmap')
         ax.xaxis.tick_top()
         ax.xaxis.set_label_position('top')
+        ax.invert_yaxis()
+
+        fig.tight_layout()
+        hm_pos = ax.get_position()
+        cb_pos = cbar_ax.get_position()
+        cbar_ax.set_position([hm_pos.x0, cb_pos.y0, hm_pos.width, cb_pos.height])
+
+        return fig, None
+    
+    def plot_monthly_goal_achievement(self):
+        """Plot a heatmap of monthly goal achievement. Returns (fig, None)."""
+        heatmap_data = self.df_monthly_perc.copy()
+        pivot_table = heatmap_data.pivot(
+            index='Year_Month', columns='Habit', values='Percentage'
+        )
+        pivot_table = pivot_table.astype(float).fillna(0)
+        col_order = config.GOAL_COLS.keys()
+        pivot_table = pivot_table.reindex(columns=[c for c in col_order if c in pivot_table.columns])
+        
+        for col in pivot_table.columns:
+            if col in config.POS_GOALS:
+                pivot_table[col] = pivot_table[col] >= config.GOAL_COLS[col]
+            elif col in config.NEG_GOALS:
+                pivot_table[col] = pivot_table[col] < config.GOAL_COLS[col]
+        
+        pivot_table = pivot_table.astype(float)
+        
+        fig = plt.figure(figsize=(15, 11))
+        gs = fig.add_gridspec(2, 1, height_ratios=[10, 0.4], hspace=0.05)
+        ax = fig.add_subplot(gs[0])
+        legend_ax = fig.add_subplot(gs[1])
+
+        sns.heatmap(pivot_table, cmap=LinearSegmentedColormap.from_list('goal', ['white', 'limegreen']),
+                    vmin=0, vmax=1, cbar=False,
+                    xticklabels=True, yticklabels=True, square=True, ax=ax)
+
+        self._apply_style(ax, title='Monthly Goal Achievement')
+        ax.xaxis.tick_top()
+        ax.xaxis.set_label_position('top')
+        ax.invert_yaxis()
+
+        from matplotlib.patches import Patch
+        legend_ax.legend(
+            handles=[Patch(facecolor='white', edgecolor='gray', label='Not achieved'),
+                     Patch(facecolor='limegreen', label='Achieved')],
+            loc='center', ncol=2, frameon=False, fontsize=10
+        )
+        legend_ax.axis('off')
+
+        fig.tight_layout()
+        hm_pos = ax.get_position()
+        lg_pos = legend_ax.get_position()
+        legend_ax.set_position([hm_pos.x0, lg_pos.y0, hm_pos.width, lg_pos.height])
 
         return fig, None
 
