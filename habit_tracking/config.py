@@ -149,6 +149,26 @@ CLEAN_WEIGHT_COLUMNS = {
     'Metabolic Age': 'Metabolic_Age'
 }
 
+GOAL_COLS = {"Collected_Data":100, 
+             "Tracked_Habits":90, 
+             "Made_Bed":90, 
+             "Exercised":50, 
+             "Stretched":20, 
+             "Cold_Plunge":14, 
+             "Morning_Pages":80, 
+             "Mindfulness":50, 
+             "Caffeine":71, 
+             "Alcohol":4, 
+             "Weed":29, 
+             "Delta8":0, 
+             "Danced":10, 
+             "Math":4, 
+             "Sex":4, 
+             "O":4, 
+             "Mental_Health":5}
+
+NEG_GOALS = {'Caffeine', 'Alcohol', 'Weed', 'Delta8'}
+POS_GOALS = GOAL_COLS.keys() - NEG_GOALS
 
 # TOGGLES ===========================================
 INCLUDE_SLEEP_DATA = True
