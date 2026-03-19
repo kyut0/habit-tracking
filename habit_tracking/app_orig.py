@@ -43,7 +43,9 @@ with st.sidebar:
 
 # --- PROCESSING -----------------------------------------------------
 tracker = HabitTracker()
-tracker.load_and_clean(service_account_file=credentials)
+tracker.load_and_clean(service_account_file=credentials,
+                       sleep_file=None,
+                       weight_file=None)
 tracker.plot_prep(start_date=selected_date_range[0], end_date=selected_date_range[1])
 
 
