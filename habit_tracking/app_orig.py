@@ -31,7 +31,7 @@ for _key, _default in {
 # ── SIDEBAR ────────────────────────────────────────────────────────
 with st.sidebar:
     st.header("Date Selection")
-    selected_date_range = st.date_input("Select a date range to view your habits over time", value=(pd.to_datetime(config.EXERCISE_START_DATE), pd.Timestamp.today()))
+    selected_date_range = st.date_input("Select a date range to view your habits over time", value=(pd.to_datetime(config.HT_START_DATE), pd.Timestamp.today()))
     
     st.header("Habit Picker")
     selected_habits = st.multiselect("Select habits to view", options=config.BOOLEAN_VARIABLES, default=["Exercised", "Caffeine", "Alcohol", "Weed"])
@@ -68,19 +68,15 @@ with row0_1:
         "Hello and welcome to Katy's spectacular habit tracking app."
     )
     st.markdown(
-        "**To begin, please enter the link to your [Goodreads profile](https://www.goodreads.com/) (or just use mine!).** 👇"
+        ""
     )
 
 row2_spacer1, row2_1, row2_spacer2 = st.columns((0.1, 3.2, 0.1))
 with row2_1:
-    user_input = st.text_input(
-        "Input your own Goodreads Link (e.g. https://www.goodreads.com/user/show/89659767-tyler-richards)"
+    
+    st.markdown(
+        ""
     )
-    need_help = st.expander("Need help? 👉")
-    with need_help:
-        st.markdown(
-            "Having trouble finding your Goodreads profile? Head to the [Goodreads website](https://www.goodreads.com/) and click profile in the top right corner."
-        )
 
 
 st.write("")
@@ -101,15 +97,11 @@ with row3_1:
 
     if 1 > 0:
         st.markdown(
-            "It looks like on average you rate books **lower** than the average Goodreads user, **by about {} points**. You differed from the crowd most on the book {} where you rated the book {} stars while the general readership rated the book {}".format(
-                abs(round(2, 3)), 0, 0, 0
-            )
+            ""
         )
     else:
         st.markdown(
-            "It looks like on average you rate books **higher** than the average Goodreads user, **by about {} points**. You differed from the crowd most on the book {} where you rated the book {} stars while the general readership rated the book {}".format(
-                abs(round(7, 3)), 0, 0, 0
-            )
+            ""
         )
     
 st.write("")
@@ -123,9 +115,7 @@ with row3_2:
     fig, _ = tracker.plot_total_barchart()
     st.pyplot(fig, use_container_width=True)
     st.markdown(
-        "It looks like you've read a grand total of **{} books with {} authors,** with {} being your most read author! That's awesome. Here's what your reading habits look like since you've started using Goodreads.".format(
-            4, 6, 9
-        )
+        ""
     )
 
 add_vertical_space()
@@ -140,17 +130,12 @@ with row4_1:
     st.pyplot(fig, use_container_width=True)
 
     st.markdown(
-        "Looks like the average publication date is around **{}**, with your oldest book being **{}** and your youngest being **{}**.".format(
-            "N/A", "N/A", "N/A"
-        )
-    )
-    st.markdown(
-        "Note that the publication date on Goodreads is the **last** publication date, so the data is altered for any book that has been republished by a publisher."
+        f"All time average mental health: {tracker.df['Mental_Health'].mean():.2f} out of 10"
     )
     
 add_vertical_space()
-row5_space1, row5_1, row5_space2 = st.columns(
-    (0.1, 2.1, 0.1)
+row5_space1, row5_1, row5_space2, row5_2, row5_space3 = st.columns(
+    (0.1, 1, 0.1, 1, 0.1)
 )
 
 with row5_1:
@@ -159,26 +144,11 @@ with row5_1:
     fig, _ = tracker.plot_monthly_heatmap()
     st.pyplot(fig, use_container_width=True)
     st.markdown(
-        "Here you can see the gender distribution over time to see how your reading habits may have changed."
+        ""
     )
     st.markdown(
-        "Want to read more books written by women? [Here](https://www.penguin.co.uk/articles/2019/mar/best-books-by-female-authors.html) is a great list from Penguin that should be a good start."
+        ""
     )
-    
-# with row5_2:
-#     st.subheader("Sleep Patterns")
-    
-#     sleep_fig = tracker.plot_sleep_pattern()
-#     if sleep_fig is not None:
-#         st.pyplot(sleep_fig, theme="streamlit", width='stretch')
-#     else:
-#         st.info("No sleep data available.")
-    
-#     st.markdown(
-#         "On average, it takes you **{} days** between you putting on Goodreads that you're reading a title, and you getting through it! Now let's move on to a gender breakdown of your authors.".format(
-#             10.0
-#         )
-#     )
 
 add_vertical_space()
 row6_space1, row6_1, row6_space2, row6_2, row6_space3 = st.columns(
