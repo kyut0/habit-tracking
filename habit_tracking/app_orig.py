@@ -28,10 +28,21 @@ for _key, _default in {
         st.session_state[_key] = _default
 
 
+# ── SIDEBAR ────────────────────────────────────────────────────────
+with st.sidebar:
+    st.header("Date Selection")
+    selected_date_range = st.date_input("Select a date range to view your habits over time", value=(pd.to_datetime(config.EXERCISE_START_DATE), pd.Timestamp.today()))
+    
+    st.header("Habit Picker")
+    selected_habits = st.multiselect("Select habits to view", options=config.BOOLEAN_VARIABLES, default=["Exercised", "Caffeine", "Alcohol", "Weed"])
+
+# --- PROCESSING -----------------------------------------------------
 tracker = HabitTracker()
 tracker.load_and_clean()
-tracker.plot_prep()
+tracker.plot_prep(start_date=selected_date_range[0], end_date=selected_date_range[1])
 
+
+# --- MAIN PANEL ------------------------------------------------------
 row0_spacer1, row0_1, row0_spacer2, row0_2, row0_spacer3 = st.columns(
     (0.1, 2, 0.2, 1, 0.1)
 )
@@ -79,8 +90,14 @@ row3_space1, row3_1, row3_space2 = st.columns(
 
 with row3_1:
     st.subheader("Monthly Percentages")
-    
-    st.pyplot(tracker.plot_monthly_percentages(), width='stretch')
+
+    fig, legend_fig = tracker.plot_monthly_percentages(selected_habits=selected_habits)
+    plot_col, legend_col = st.columns([4, 1])
+    with plot_col:
+        st.pyplot(fig, use_container_width=True)
+    with legend_col:
+        if legend_fig:
+            st.pyplot(legend_fig, use_container_width=True)
 
     if 1 > 0:
         st.markdown(
@@ -102,8 +119,9 @@ row3_space1, row3_2, row3_space2 = st.columns(
 
 with row3_2:
     st.subheader("Habit Totals")
-    
-    st.pyplot(tracker.plot_total_barchart(), use_container_width=True)
+
+    fig, _ = tracker.plot_total_barchart()
+    st.pyplot(fig, use_container_width=True)
     st.markdown(
         "It looks like you've read a grand total of **{} books with {} authors,** with {} being your most read author! That's awesome. Here's what your reading habits look like since you've started using Goodreads.".format(
             4, 6, 9
@@ -118,7 +136,8 @@ row4_space1, row4_1, row4_space2 = st.columns(
 with row4_1:
     st.subheader("Mental Health")
 
-    st.pyplot(tracker.plot_mental_health_trend(), width='stretch')
+    fig, _ = tracker.plot_mental_health_trend()
+    st.pyplot(fig, use_container_width=True)
 
     st.markdown(
         "Looks like the average publication date is around **{}**, with your oldest book being **{}** and your youngest being **{}**.".format(
@@ -137,7 +156,14 @@ row5_space1, row5_1, row5_space2 = st.columns(
 with row5_1:
     st.subheader("Medications")
     
-    st.pyplot(tracker.plot_medications(), width='stretch')
+    fig, legend_fig = tracker.plot_medications()
+    if fig is not None:
+        plot_col, legend_col = st.columns([4, 1])
+        with plot_col:
+            st.pyplot(fig, use_container_width=True)
+        with legend_col:
+            if legend_fig:
+                st.pyplot(legend_fig, use_container_width=True)
 
     st.markdown(
         "Your average book length is **{} pages**, and your longest book read is **{} at {} pages!**.".format(
@@ -165,21 +191,22 @@ row6_space1, row6_1, row6_space2, row6_2, row6_space3 = st.columns(
     (0.1, 1, 0.1, 1, 0.1)
 )
 
-# with row6_1:
-#     st.subheader("Cumulative Habits")
+with row6_1:
+    st.subheader("Diary")
     
-#     st.pyplot(tracker.plot_cumulative_habits(), theme="streamlit", width='stretch')
-#     st.markdown(
-#         "To get the gender breakdown of the books you have read, this next bit takes the first name of the authors and uses that to predict their gender. These algorithms are far from perfect, and tend to miss non-Western/non-English genders often so take this graph with a grain of salt."
-#     )
-#     st.markdown(
-#         "Note: the package I'm using for this prediction outputs 'andy', which stands for androgenous, whenever multiple genders are nearly equally likely (at some threshold of confidence). It is not, sadly, a prediction of a new gender called andy."
-#     )
+    
+    st.markdown(
+        "To get the gender breakdown of the books you have read, this next bit takes the first name of the authors and uses that to predict their gender. These algorithms are far from perfect, and tend to miss non-Western/non-English genders often so take this graph with a grain of salt."
+    )
+    st.markdown(
+        "Note: the package I'm using for this prediction outputs 'andy', which stands for androgenous, whenever multiple genders are nearly equally likely (at some threshold of confidence). It is not, sadly, a prediction of a new gender called andy."
+    )
 
 with row6_2:
     st.subheader("Monthly Heatmap")
    
-    st.pyplot(tracker.plot_monthly_heatmap(), width='stretch')
+    fig, _ = tracker.plot_monthly_heatmap()
+    st.pyplot(fig, use_container_width=True)
     st.markdown(
         "Here you can see the gender distribution over time to see how your reading habits may have changed."
     )
@@ -210,23 +237,16 @@ with row7_1:
 
 
 
-st.title("Some Title Here")
-
-with st.expander("Instructions:"):
-    st.markdown("""
-        \n1. Insert. 
-        \n2. Something.
-        \n3. Here.""")
-
-# ── SIDEBAR ────────────────────────────────────────────────────────
-with st.sidebar:
-    st.header("Date Selection")
-    selected_date_range = st.date_input("Select a date range to view your habits over time", value=(pd.to_datetime(config.EXERCISE_START_DATE), pd.Timestamp.today()))
-    
-    st.header("Habit Picker")
-    selected_habits = st.multiselect("Select habits to view", options=config.BOOLEAN_VARIABLES, default=["Exercised", "Caffeine", "Alcohol", "Weed"])
     
 # ── MAIN PANEL ─────────────────────────────────────────────────────────────────
+
+# st.title("Some Title Here")
+
+# with st.expander("Instructions:"):
+#     st.markdown("""
+#         \n1. Insert. 
+#         \n2. Something.
+#         \n3. Here.""")
 
 # render_metrics(current_df, loaded_files)
 
