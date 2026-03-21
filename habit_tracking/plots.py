@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import config
+from habit_tracking import config
 
 # Load packages
 import pandas as pd
