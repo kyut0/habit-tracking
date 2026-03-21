@@ -72,7 +72,7 @@ habit_cols = stats['habit_cols']
 tracker.plot_prep(start_date=selected_date_range[0], end_date=selected_date_range[1])
 
 # ── TABS ───────────────────────────────────────────────────────────────────────
-tab_dash, tab_compare, tab_stat = st.tabs(["📊 Dashboard", "📅 Comparison", "🔬 Analysis"])
+tab_dash, tab_compare, tab_stat = st.tabs(["Dashboard", "Comparison", "Analysis"])
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 1 — DASHBOARD (existing content, unchanged)
