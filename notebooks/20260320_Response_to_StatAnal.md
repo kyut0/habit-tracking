@@ -19,8 +19,8 @@ print(read_ipynb('20260320_Statistical_Analysis.ipynb'))
 
 
 ```
-```text?code_stdout&code_event_index=2
-## Markdown Cell ##
+
+
 # Habit Tracking — Statistical Analysis
 Katy Yut  
 March 20, 2026
@@ -138,7 +138,8 @@ print(f'Days with Mental_Health score: {n_with_mh:,} ({100*n_with_mh/n_tracked:.
 print(f'Habit columns from config: {HABIT_COLS}')
 print(f'\nMental Health distribution:')
 print(df_int[OUTCOME].describe().round(2))
-## Markdown Cell ##
+
+
 ---
 # 2. Descriptive Overview
 
@@ -146,6 +147,7 @@ Before any inferential statistics, understand the marginal distributions.
 
 ## Code Cell ##
 # ── Mental Health distribution ─────────────────────────────────────────────────
+```
 fig, axes = plt.subplots(1, 2, figsize=(12, 4))
 
 mh = df_int[OUTCOME].dropna()
@@ -172,7 +174,9 @@ axes[1].legend()
 
 plt.tight_layout()
 plt.show()
-## Code Cell ##
+```
+
+
 # ── Habit completion rates ─────────────────────────────────────────────────────
 habit_rates = df_int[HABIT_COLS].mean().sort_values(ascending=True) * 100
 
@@ -186,7 +190,8 @@ for bar, val in zip(bars, habit_rates.values):
             f'{val:.0f}%', va='center', fontsize=9)
 plt.tight_layout()
 plt.show()
-## Markdown Cell ##
+
+
 ---
 # 3. Habit → Mental Health Correlations
 
@@ -197,7 +202,7 @@ Additionally, Mann-Whitney U test checks whether the Mental_Health *distribution
 Bonferroni-corrected threshold: α_adjusted = 0.05 / 14 ≈ **0.0036**.  
 We also show Benjamini-Hochberg (BH) corrected p-values, which are less conservative.
 
-## Code Cell ##
+```
 results = []
 analysis_df = df_int.dropna(subset=[OUTCOME])
 
@@ -264,9 +269,11 @@ ax.text(0.98, 0.02, 'Green = positive effect | Red = negative effect',
         transform=ax.transAxes, ha='right', fontsize=9, color='grey')
 plt.tight_layout()
 plt.show()
-## Code Cell ##
+```
+
 # ── Box plots: Mental_Health distributions for top/bottom habits ───────────────
 # Show top 4 positive and top 4 negative by MH_diff
+```
 top_habits = list(results_df.head(4)['Habit']) + list(results_df.tail(4)['Habit'])
 
 fig, axes = plt.subplots(2, 4, figsize=(14, 7), sharey=True)
@@ -289,7 +296,8 @@ for ax, habit in zip(axes, top_habits):
 fig.suptitle('Mental Health by Habit (top 4 positive & negative effects)', fontsize=12)
 plt.tight_layout()
 plt.show()
-## Markdown Cell ##
+```
+
 ---
 # 4. Lagged Effects — Yesterday's Habits Today
 
@@ -303,6 +311,7 @@ if habit on day *t* predicts mental health on day *t+1* (or behavior on day *t+1
 
 ## Code Cell ##
 # ── Build lagged dataset ───────────────────────────────────────────────────────
+```
 # Sort by date and shift habit columns by 1 day
 lag_df = df_int.sort_values('Date').copy()
 
@@ -321,8 +330,10 @@ lag_df = lag_df.drop(columns=['Date_dt', 'Date_prev', 'Gap'])
 
 LAG_HABITS = [f'{h}_lag1' for h in HABIT_COLS]
 print(f'Lagged dataset: {len(lag_df):,} consecutive-day pairs')
-## Code Cell ##
+```
+
 # ── Lagged habits → next-day Mental Health ─────────────────────────────────────
+```
 lag_results = []
 lag_analysis = lag_df.dropna(subset=[OUTCOME])
 
@@ -349,8 +360,10 @@ lag_res_df['sig_BH'] = lag_res_df['p_BH'] < 0.05
 lag_res_df = lag_res_df.sort_values('MH_diff', ascending=False).reset_index(drop=True)
 print('Effect of yesterday\'s habit on TODAY\'s Mental Health:')
 print(lag_res_df.round(3).to_string(index=False))
-## Code Cell ##
+```
+
 # ── Q2: Does being sober yesterday predict making your bed today? ──────────────
+```
 # "Sober" = no Alcohol AND no Weed the day before
 lag_df['Sober_lag1'] = ((lag_df['Alcohol_lag1'] == 0) & (lag_df['Weed_lag1'] == 0)).astype(float)
 lag_df.loc[lag_df['Alcohol_lag1'].isna() | lag_df['Weed_lag1'].isna(), 'Sober_lag1'] = np.nan
@@ -386,7 +399,8 @@ ax.set_title(f'Q2: Does sobriety yesterday predict making bed today?\np={p_chi:.
 ax.set_ylim(0, 110)
 plt.tight_layout()
 plt.show()
-## Markdown Cell ##
+```
+
 ---
 # 5. Multiple Regression — What Predicts Mental Health?
 
@@ -395,7 +409,8 @@ This controls for co-occurring habits (e.g., Exercised and Stretched are correla
 
 **Interpretation:** A coefficient of +0.3 means: on days when you did this habit (holding all other habits constant), Mental Health was 0.3 points higher on average.
 
-## Code Cell ##
+
+```
 reg_df = df_int.dropna(subset=[OUTCOME]).copy()
 
 # Drop rare habits to avoid multicollinearity issues (fewer than 20 days done)
@@ -406,8 +421,10 @@ y = reg_df[OUTCOME]
 
 model = sm.OLS(y, X).fit()
 print(model.summary())
-## Code Cell ##
+```
+
 # ── Coefficient plot ───────────────────────────────────────────────────────────
+```
 coef = model.params.drop('const')
 conf = model.conf_int().drop('const')
 p_vals = model.pvalues.drop('const')
@@ -440,7 +457,8 @@ plt.show()
 
 print(f'\nModel explains {model.rsquared*100:.1f}% of variance in Mental Health scores')
 print(f'Adjusted R²: {model.rsquared_adj:.3f}')
-## Markdown Cell ##
+```
+
 ---
 # 6. Habit–Habit Correlations
 
@@ -450,6 +468,7 @@ Explore which habits tend to occur together.
 
 ## Code Cell ##
 # ── Correlation matrix ─────────────────────────────────────────────────────────
+```
 corr_df = df_int[HABIT_COLS].dropna(how='all')
 corr_matrix = corr_df.corr(method='pearson')
 
@@ -487,7 +506,8 @@ for col in upper_tri.columns:
         val = upper_tri.loc[row, col]
         if not np.isnan(val) and abs(val) > 0.2:
             print(f'  {row:15s} ↔ {col:15s}  r={val:.3f}')
-## Markdown Cell ##
+```
+
 ---
 # 7. Seasonal Analysis
 
@@ -498,6 +518,7 @@ Do habits and mental health vary by season?
 
 ## Code Cell ##
 # ── Mental health by season ────────────────────────────────────────────────────
+```
 season_order = ['Spring', 'Summer', 'Fall', 'Winter']
 season_mh = df_int.groupby('Season')[OUTCOME].agg(['mean', 'std', 'count'])
 season_mh = season_mh.reindex(season_order)
@@ -541,8 +562,10 @@ plt.show()
 
 print(f'\nKruskal-Wallis: H={kw_stat:.2f}, p={kw_p:.4f}')
 print(season_mh[['mean', 'count']].round(2))
-## Code Cell ##
+```
+
 # ── Habit rates by season ──────────────────────────────────────────────────────
+```
 habits_to_plot = ['Exercised', 'Cold_Plunge', 'Danced', 'Mindfulness',
                   'Morning_Pages', 'Alcohol', 'Weed', 'Made_Bed']
 
@@ -564,7 +587,8 @@ for ax, habit in zip(axes, habits_to_plot):
 fig.suptitle('Habit Completion Rates by Season', fontsize=13)
 plt.tight_layout()
 plt.show()
-## Markdown Cell ##
+```
+
 ---
 # 8. Year-over-Year Comparison
 
@@ -573,6 +597,7 @@ Each subplot shows one year, making it easy to spot multi-year trends.
 
 ## Code Cell ##
 # ── Mental health: year-over-year comparison ───────────────────────────────────
+```
 years = sorted(df_int['Year'].unique())
 n_years = len(years)
 
