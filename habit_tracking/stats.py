@@ -20,6 +20,18 @@ from statsmodels.tsa.stattools import adfuller
 from habit_tracking import config
 
 OUTCOME = 'Mental_Health'
+
+# Numeric predictors that replace (or supplement) their boolean counterparts.
+# Structure: boolean_col -> (numeric_col, zero_fill_value, display_label, unit)
+# zero_fill_value is substituted when the boolean is False and the numeric is NaN
+# (i.e., no caffeine consumed = 0 mg, no mindfulness = 0 minutes).
+NUMERIC_PREDICTORS = {
+    'Caffeine':    ('Caffeine_Quantity_mg', 0.0, 'Caffeine',    'mg'),
+    'Mindfulness': ('Mindfulness_mins',     0.0, 'Mindfulness', 'minutes'),
+}
+# Minimum number of non-zero observations required to include a numeric predictor
+MIN_NUMERIC_OBS = 50
+
 SEASON_MAP = {
     12: 'Winter', 1: 'Winter', 2: 'Winter',
     3: 'Spring', 4: 'Spring', 5: 'Spring',
@@ -61,6 +73,19 @@ def build_analysis_df(tracker_df: pd.DataFrame) -> pd.DataFrame:
     df_int['Year'] = df_int['Date'].dt.year
     df_int['Month'] = df_int['Date'].dt.month
     df_int['Season'] = df_int['Month'].map(SEASON_MAP)
+
+    # ── Numeric predictors ────────────────────────────────────────────────────
+    # For each boolean habit that has a numeric quantity column, add it to df_int
+    # with 0 substituted on non-use days (so "no caffeine" = 0 mg, not NaN).
+    for bool_col, (num_col, fill_val, _, _) in NUMERIC_PREDICTORS.items():
+        if num_col not in df.columns or bool_col not in df.columns:
+            continue
+        vals = pd.to_numeric(df[num_col], errors='coerce')
+        # Where boolean is False and quantity is NaN → substitute fill_val (0)
+        is_non_use = (df[bool_col].astype(int) == 0) & vals.isna()
+        vals = vals.copy()
+        vals.loc[is_non_use] = fill_val
+        df_int[num_col] = vals.values
 
     return df_int
 
@@ -212,27 +237,102 @@ def run_sobriety_bed_test(lag_df: pd.DataFrame) -> dict:
     }
 
 
+def run_numeric_correlations(df_int: pd.DataFrame) -> pd.DataFrame:
+    """
+    Spearman correlation between numeric predictors and Mental_Health.
+
+    Spearman is used because:
+        - Mental_Health is ordinal (1–10 integers)
+        - Caffeine_Quantity_mg and Mindfulness_mins are right-skewed
+          (many zeros, with a long tail of higher values)
+
+    For each numeric predictor we also compute:
+        - Linear slope (MH change per unit, e.g. per mg or per minute)
+        - % of days with non-zero value (to flag sparse predictors)
+
+    Returns an empty DataFrame if no numeric predictors have sufficient data.
+    """
+    analysis = df_int.dropna(subset=[OUTCOME])
+    rows = []
+
+    for bool_col, (num_col, _, label, unit) in NUMERIC_PREDICTORS.items():
+        if num_col not in analysis.columns:
+            continue
+        sub = analysis[[num_col, OUTCOME]].dropna()
+        n_nonzero = int((sub[num_col] > 0).sum())
+        if n_nonzero < MIN_NUMERIC_OBS:
+            continue
+
+        r_sp, p_sp = scipy_stats.spearmanr(sub[num_col], sub[OUTCOME])
+        # Linear slope gives an interpretable "per-unit" effect size
+        slope, intercept, r_lin, p_lin, _ = scipy_stats.linregress(
+            sub[num_col], sub[OUTCOME]
+        )
+
+        rows.append({
+            'Variable':      num_col,
+            'Label':         label,
+            'Unit':          unit,
+            'Bool_col':      bool_col,
+            'N_total':       len(sub),
+            'N_nonzero':     n_nonzero,
+            'Pct_nonzero':   round(100 * n_nonzero / len(sub), 1),
+            'Spearman_r':    round(r_sp, 4),
+            'p_spearman':    float(p_sp),
+            'slope':         float(slope),       # MH points per unit
+            'p_linear':      float(p_lin),
+            'significant':   p_sp < 0.05,
+        })
+
+    return pd.DataFrame(rows) if rows else pd.DataFrame()
+
+
 def run_regression(df_int: pd.DataFrame) -> dict:
     """
     OLS with:
         - Lagged dependent variable (MH_lag1) to absorb autocorrelation
         - HAC (Newey-West) standard errors for heteroscedastic, autocorrelated residuals
         - Durbin-Watson check on residuals
+        - Numeric versions of Caffeine / Mindfulness used instead of booleans
+          to capture dose-response effects (e.g. 300mg caffeine ≠ 50mg)
 
-    Habits with fewer than 20 observed days are excluded.
+    Habits with fewer than 20 observed days (or non-zero rows for numeric) excluded.
     Lags that cross a tracking gap are nulled out.
 
     Returns a dict of plain types (no statsmodels objects) safe for caching.
     """
     habit_cols = get_habit_cols(df_int)
     reg_df = df_int.dropna(subset=[OUTCOME]).copy().sort_values('Date')
+
+    # Start with boolean habits that meet the observation threshold
     sufficient = [h for h in habit_cols if reg_df[h].sum() >= 20]
+
+    # Swap boolean predictors for their numeric counterparts where available.
+    # The numeric column is already 0-filled for non-use days in build_analysis_df,
+    # so it directly replaces the boolean without losing information.
+    # Track replacements for the 'numeric_swaps' annotation in results.
+    numeric_swaps = {}
+    final_predictors = []
+    for h in sufficient:
+        if h in NUMERIC_PREDICTORS:
+            num_col, _, label, unit = NUMERIC_PREDICTORS[h]
+            if num_col in reg_df.columns:
+                n_nonzero = int((reg_df[num_col] > 0).sum())
+                if n_nonzero >= MIN_NUMERIC_OBS:
+                    final_predictors.append(num_col)
+                    numeric_swaps[h] = {
+                        'numeric_col': num_col,
+                        'label': label,
+                        'unit': unit,
+                    }
+                    continue
+        final_predictors.append(h)
 
     reg_df['MH_lag1'] = reg_df[OUTCOME].shift(1)
     gap = (reg_df['Date'] - reg_df['Date'].shift(1)).dt.days
     reg_df.loc[gap != 1, 'MH_lag1'] = np.nan
 
-    predictors = sufficient + ['MH_lag1']
+    predictors = final_predictors + ['MH_lag1']
     clean = reg_df.dropna(subset=predictors + [OUTCOME])
 
     if len(clean) < 30:
@@ -281,6 +381,8 @@ def run_regression(df_int: pd.DataFrame) -> dict:
         'dw_stat': dw,
         'mh_lag_coef': float(model.params.get('MH_lag1', np.nan)),
         'mh_lag_p': float(model.pvalues.get('MH_lag1', np.nan)),
+        # Which boolean habits were replaced by their numeric counterparts
+        'numeric_swaps': numeric_swaps,
     }
 
 
@@ -384,6 +486,7 @@ def run_all(tracker_df: pd.DataFrame) -> dict:
         'lag_df': lag_df,
         'habit_cols': get_habit_cols(df_int),
         'correlations': run_habit_mh_correlations(df_int),
+        'numeric_correlations': run_numeric_correlations(df_int),
         'lagged_mh': run_lagged_mh(lag_df),
         'sobriety_bed': run_sobriety_bed_test(lag_df),
         'regression': run_regression(df_int),
