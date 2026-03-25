@@ -89,6 +89,7 @@ CLEAN_COLUMN_NAMES = {
     'Dance?': 'Danced',
     'Morning pages?': 'Morning_Pages',
     'Mindfulness?': 'Mindfulness',
+    'Mindfulness (minutes)': 'Mindfulness_mins',
     'Cold plunge?': 'Cold_Plunge',
     'Caffeine?': 'Caffeine',
     'Caffeine Quantity, mg': 'Caffeine_Quantity_mg',
