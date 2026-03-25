@@ -6,7 +6,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 import config
-from tracker import HabitTracker
+from habit_tracking.tracker import HabitTracker
 from stats import run_all
 import stats_plots as sp
 
