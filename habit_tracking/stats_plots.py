@@ -17,7 +17,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from habit_tracking import config
+import config
 
 PALETTE = sns.color_palette('muted')
 SEASON_COLORS = {

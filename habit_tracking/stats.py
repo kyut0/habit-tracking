@@ -17,7 +17,7 @@ import statsmodels.api as sm
 from statsmodels.stats.multitest import multipletests
 from statsmodels.tsa.stattools import adfuller
 
-from habit_tracking import config
+import config
 
 OUTCOME = 'Mental_Health'
 

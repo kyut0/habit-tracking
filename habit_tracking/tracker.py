@@ -9,8 +9,8 @@ from datetime import timedelta
 import warnings
 warnings.filterwarnings('ignore')
 
-from habit_tracking import config
-from habit_tracking.plots import HabitPlotter
+import config
+from plots import HabitPlotter
 
 class HabitTracker(HabitPlotter):
     def __init__(self):
