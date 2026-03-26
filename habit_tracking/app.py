@@ -1,12 +1,12 @@
 # app_orig.py
 # Habit Tracking Application
-# TO RUN: streamlit run habit_tracking/app_orig.py
+# TO RUN: streamlit run habit_tracking/app.py
 
 import warnings
 warnings.filterwarnings('ignore')
 
 import config
-from tracker import HabitTracker
+from habit_tracking.tracker import HabitTracker
 from stats import run_all
 import stats_plots as sp
 
@@ -304,6 +304,7 @@ with tab_stat:
     )
 
     corr = stats['correlations']
+    num_corr = stats['numeric_correlations']
     reg = stats['regression']
     sob = stats['sobriety_bed']
     lag = stats['lagged_mh']
@@ -395,13 +396,75 @@ than on days you didn't (done on {best['N_done']} days, not done on {best['N_not
                 'p (MW)': '{:.4f}', 'p (BH)': '{:.4f}',
             }), hide_index=True, use_container_width=True)
 
+    # ── Section 1b: Numeric Predictor Correlations ────────────────────────────
+    st.markdown("---")
+    st.subheader("1b. Dose-Response — Numeric Variables")
+    st.markdown(
+        "For **Caffeine** and **Mindfulness**, you track not just *whether* but *how much*. "
+        "Treating these as continuous predictors is more informative: "
+        "does 300 mg of caffeine affect mood differently than 50 mg? "
+        "Does 30 minutes of mindfulness differ from 10?  \n"
+        "**Method:** Spearman correlation (appropriate for ordinal Mental_Health scores "
+        "and right-skewed quantity distributions). Non-use days contribute as 0 mg / 0 min."
+    )
+
+    if len(num_corr) > 0:
+        col_nc1, col_nc2 = st.columns([1, 2])
+        with col_nc1:
+            st.pyplot(sp.plot_numeric_correlations_bar(num_corr), use_container_width=True)
+
+        with col_nc2:
+            # Adaptive text per predictor
+            for _, nc_row in num_corr.iterrows():
+                label, unit = nc_row['Label'], nc_row['Unit']
+                r_sp = nc_row['Spearman_r']
+                p_sp = nc_row['p_spearman']
+                slope = nc_row['slope']
+                n_nz = nc_row['N_nonzero']
+                direction = "positive" if r_sp > 0 else "negative"
+                sig_word = "significant" if nc_row['significant'] else "not statistically significant"
+                slope_interp = (
+                    f"Each additional 100 {unit} is associated with a "
+                    f"**{slope * 100:+.3f}-point** change in mental health"
+                    if unit == 'mg'
+                    else f"Each additional 10 {unit} of practice is associated with a "
+                         f"**{slope * 10:+.3f}-point** change in mental health"
+                )
+                st.markdown(
+                    f"**{label}** (n = {n_nz} use days):  \n"
+                    f"Spearman r = **{r_sp:.3f}** — {direction} correlation, **{sig_word}** (p = {p_sp:.4f}).  \n"
+                    f"{slope_interp} (OLS on use days only)."
+                )
+
+            # Interactive scatter selector
+            nc_options = num_corr['Label'].tolist()
+            chosen_nc = st.selectbox(
+                "View scatter plot for:", options=nc_options,
+                key='numeric_scatter_selector'
+            )
+            nc_row_sel = num_corr[num_corr['Label'] == chosen_nc].iloc[0]
+            st.pyplot(
+                sp.plot_numeric_scatter(
+                    df_int,
+                    nc_row_sel['Variable'],
+                    nc_row_sel['Label'],
+                    nc_row_sel['Unit'],
+                ),
+                use_container_width=True,
+            )
+    else:
+        st.info("No numeric predictors had sufficient data (≥ 50 non-zero days).")
+
     # ── Section 2: Regression ─────────────────────────────────────────────────
     st.markdown("---")
     st.subheader("2. Multiple Regression — Controlling for Yesterday's Mood")
     st.markdown(
         "**Upgrade over simple correlation:** holds all habits constant simultaneously "
         "and adds a lagged dependent variable (`MH_lag1`) to absorb day-to-day mood persistence. "
-        "Uses HAC (Newey-West) standard errors robust to autocorrelation and heteroscedasticity."
+        "Uses HAC (Newey-West) standard errors robust to autocorrelation and heteroscedasticity.  \n"
+        "**Dose-response:** where a numeric quantity column exists (Caffeine mg, Mindfulness minutes), "
+        "it replaces the boolean flag in the regression — capturing whether *more* of a habit "
+        "matters, not just *whether* it occurred."
     )
 
     if reg.get('sufficient_data'):

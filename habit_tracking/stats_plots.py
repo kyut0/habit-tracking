@@ -429,3 +429,111 @@ def plot_stationarity_visual(df_int: pd.DataFrame) -> plt.Figure:
     fig.patch.set_facecolor('white')
     plt.tight_layout()
     return fig
+
+
+# ── Numeric Predictor Plots ────────────────────────────────────────────────────
+
+def plot_numeric_scatter(df_int: pd.DataFrame, num_col: str,
+                         label: str, unit: str) -> plt.Figure:
+    """
+    Scatter plot of a numeric predictor vs Mental_Health with an OLS regression line.
+
+    Points are jittered vertically (MH is integer-valued) to show density.
+    Non-use days (value == 0) are shown in a muted colour; use days in the
+    habit's config colour (or a default) so the dose-response relationship
+    is visible in the use-day sub-population.
+
+    Annotations:
+        - Spearman r and p-value (whole sample including zeros)
+        - OLS slope (MH points per unit) with 95% CI shading
+    """
+    from scipy import stats as sp
+
+    sub = df_int[[num_col, 'Mental_Health']].dropna()
+    sub = sub.rename(columns={num_col: 'x', 'Mental_Health': 'y'})
+
+    # Separate zero (no-use) and non-zero (use) days for colour coding
+    use  = sub[sub['x'] > 0]
+    zero = sub[sub['x'] == 0]
+
+    fig, ax = plt.subplots(figsize=(7, 4))
+    rng = np.random.default_rng(42)
+
+    # Plot zero-days as a rug on the left edge
+    if len(zero):
+        jitter_y = rng.normal(0, 0.15, len(zero))
+        ax.scatter(np.zeros(len(zero)), zero['y'] + jitter_y,
+                   alpha=0.15, s=12, color='#aaaaaa', label=f'No {label} (n={len(zero)})')
+
+    # Plot use-days
+    if len(use):
+        jitter_y = rng.normal(0, 0.15, len(use))
+        ax.scatter(use['x'], use['y'] + jitter_y,
+                   alpha=0.4, s=18, color=PALETTE[0], label=f'{label} days (n={len(use)})')
+
+        # OLS line through use-days only (dose-response in the use sub-population)
+        slope, intercept, r_lin, p_lin, se = sp.linregress(use['x'], use['y'])
+        x_range = np.linspace(use['x'].min(), use['x'].max(), 200)
+        y_hat = intercept + slope * x_range
+        # 95% CI band (approximate)
+        n = len(use)
+        x_mean = use['x'].mean()
+        s_xx = ((use['x'] - x_mean) ** 2).sum()
+        se_line = se * np.sqrt(1 / n + (x_range - x_mean) ** 2 / s_xx)
+        ax.plot(x_range, y_hat, color='red', linewidth=2,
+                label=f'OLS (use days): β = {slope:.4f}/{unit}, p = {p_lin:.3f}')
+        ax.fill_between(x_range, y_hat - 1.96 * se_line, y_hat + 1.96 * se_line,
+                        color='red', alpha=0.10)
+
+    # Spearman r over full sample (including zeros)
+    r_sp, p_sp = sp.spearmanr(sub['x'], sub['y'])
+    ax.text(0.98, 0.04,
+            f'Spearman r = {r_sp:.3f},  p = {p_sp:.4f}  (all days incl. zeros)',
+            transform=ax.transAxes, ha='right', fontsize=9, color='#555555')
+
+    ax.legend(fontsize=9, frameon=False)
+    _apply_style(ax,
+                 title=f'{label} vs Mental Health',
+                 xlabel=f'{label} ({unit})',
+                 ylabel='Mental Health Score (jittered)',
+                 rotate_x=False)
+    ax.set_ylim(0, 11)
+    fig.patch.set_facecolor('white')
+    plt.tight_layout()
+    return fig
+
+
+def plot_numeric_correlations_bar(numeric_corr_df: pd.DataFrame) -> plt.Figure:
+    """
+    Bar chart of Spearman r values for each numeric predictor vs Mental_Health.
+    Includes significance markers and a zero reference line.
+    Complements the boolean forest plot so both appear in the same section.
+    """
+    if len(numeric_corr_df) == 0:
+        fig, ax = plt.subplots(figsize=(5, 2))
+        ax.text(0.5, 0.5, 'No numeric predictors with sufficient data',
+                ha='center', va='center', transform=ax.transAxes)
+        fig.patch.set_facecolor('white')
+        return fig
+
+    df = numeric_corr_df.sort_values('Spearman_r')
+    colors = ['#2ecc71' if r > 0 else '#e74c3c' for r in df['Spearman_r']]
+
+    fig, ax = plt.subplots(figsize=(6, max(2, len(df) * 0.9)))
+    bars = ax.barh(df['Label'], df['Spearman_r'], color=colors, edgecolor='none')
+    ax.axvline(0, color='black', linewidth=1)
+
+    for bar, (_, row) in zip(bars, df.iterrows()):
+        label_text = f"★ p={row['p_spearman']:.4f}" if row['significant'] else f"p={row['p_spearman']:.3f}"
+        offset = 0.003 if row['Spearman_r'] >= 0 else -0.003
+        ha = 'left' if row['Spearman_r'] >= 0 else 'right'
+        ax.text(row['Spearman_r'] + offset, bar.get_y() + bar.get_height() / 2,
+                label_text, va='center', ha=ha, fontsize=9)
+
+    _apply_style(ax,
+                 title='Numeric Predictors — Spearman r vs Mental Health\n(★ = p < 0.05)',
+                 xlabel='Spearman r',
+                 rotate_x=False)
+    fig.patch.set_facecolor('white')
+    plt.tight_layout()
+    return fig
